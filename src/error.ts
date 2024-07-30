@@ -427,7 +427,7 @@ export function rethrow<S extends Error, D extends Error>(
   }
 }
 
-export function supress<E extends Error, V>(
+export function supress<V, E extends Error = Error>(
   Err: new (message?: string) => E,
   value?: V,
 ): (err: unknown) => V | undefined {

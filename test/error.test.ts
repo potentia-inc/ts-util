@@ -171,29 +171,39 @@ describe('error utilities', () => {
   test('rethrow()', async () => {
     class SrcError extends Error {}
     class DstError extends Error {}
-    await expect(fn(Error).catch(rethrow(SrcError, DstError))).rejects.toThrow(
-      Error,
-    )
     await expect(
-      fn(SrcError).catch(rethrow(SrcError, DstError)),
+      reject(Error).catch(rethrow(SrcError, DstError)),
+    ).rejects.toThrow(Error)
+    await expect(
+      reject(SrcError).catch(rethrow(SrcError, DstError)),
     ).rejects.toThrow(DstError)
   })
 
   test('supress()', async () => {
     class OmitError extends Error {}
-    await expect(fn(Error).catch(supress(OmitError))).rejects.toThrow(Error)
-    await expect(fn(Error).catch(supress(OmitError, 'foobar'))).rejects.toThrow(
-      Error,
-    )
+    await expect(reject(Error).catch(supress(OmitError))).rejects.toThrow(Error)
     await expect(
-      fn(OmitError).catch(supress(OmitError)),
+      reject(Error).catch(supress(OmitError, 'foobar')),
+    ).rejects.toThrow(Error)
+    await expect(
+      reject(OmitError).catch(supress(OmitError)),
     ).resolves.toBeUndefined()
     await expect(
-      fn(OmitError).catch(supress(OmitError, 'foobar')),
+      reject(OmitError).catch(supress<string>(OmitError)),
+    ).resolves.toBeUndefined()
+    await expect(
+      reject(OmitError).catch(supress(OmitError, 'foobar')),
+    ).resolves.toBe('foobar')
+    await expect(
+      resolve('foobar').catch(supress<string, OmitError>(OmitError)),
     ).resolves.toBe('foobar')
   })
 
-  function fn<E>(Err: new (message?: string) => E): Promise<never> {
+  function resolve(x: string): Promise<string> {
+    return Promise.resolve(x)
+  }
+
+  function reject<E>(Err: new (message?: string) => E): Promise<never> {
     return Promise.reject(new Err())
   }
 })
