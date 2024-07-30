@@ -186,6 +186,8 @@ Promise.reject(new A()).catch(rethrow(A, B)) // rejects with B error instead
 Promise.reject(new A()).catch(supress(B, 'foobar')) // rejects with A error
 Promise.reject(new B()).catch(supress(B, 'foobar')) // resolve with 'foobar'
 Promise.reject(new B()).catch(supress(B)) // resolve with undefined
+Promise.reject(new B()).catch(supress<string>(B)) // return type specified explicitly
+Promise.reject(new B()).catch(supress<string, B>(B)) // types specified explicitly
 ```
 
 ## Misc
