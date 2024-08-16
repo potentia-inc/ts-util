@@ -1,4 +1,4 @@
-import { option, sleep } from '../src/misc'
+import { option, sleep } from '../src/misc.js'
 
 describe('option', () => {
   test('option()', () => {
