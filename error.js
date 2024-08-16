@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 export class HTTPError extends Error {
+    errno;
+    status;
     constructor(message, errno, status) {
         super(message ?? 'HTTP Error');
         this.name = 'HTTPError';
