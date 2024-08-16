@@ -1,4 +1,5 @@
 import { option, sleep } from '../src/misc.js'
+import { NIL } from '../src/type.js'
 
 describe('option', () => {
   test('option()', () => {
@@ -7,9 +8,9 @@ describe('option', () => {
   })
 
   test('option() with nil value', () => {
-    expect(option('foo', undefined)).toBeUndefined()
+    expect(option('foo', NIL)).toBeUndefined()
     expect(option('bar', null)).toBeUndefined()
-    expect({ ...option('bar', undefined) }).toEqual({})
+    expect({ ...option('bar', NIL) }).toEqual({})
   })
 })
 

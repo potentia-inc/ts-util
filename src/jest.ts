@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
+// /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
-import { toBigInt, toDate } from './index.js'
+import { NIL, toBigInt, toDate } from './index.js'
 import { matcherHint, printExpected, printReceived } from 'jest-matcher-utils'
 
 interface CustomMatchers<R = unknown> {
+  toBeNil: (this: unknown) => R
   toBeBigInt: (this: unknown) => R
   toEqualBigInt: (this: unknown, expected: unknown) => R
   // toBeDate() and toBeValidDate(): see jest-extended
@@ -15,6 +15,7 @@ interface CustomMatchers<R = unknown> {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Expect extends CustomMatchers {}
     interface Matchers<R> extends CustomMatchers<R> {}
@@ -27,6 +28,23 @@ type This = {
   promise: string
 }
 
+export function toBeNil(
+  this: unknown,
+  received: unknown,
+): jest.CustomMatcherResult {
+  const { isNot, promise } = this as unknown as This
+  const comment = 'Nil type validity'
+  const options = { comment, isNot, promise }
+  const pass = received === NIL
+  const message = getMessage(
+    pass,
+    matcherHint('toBeNil', NIL, NIL, options),
+    printReceived(received),
+    printExpected('Nil'),
+  )
+  return { message, pass }
+}
+
 export function toBeBigInt(
   this: unknown,
   received: unknown,
@@ -37,7 +55,7 @@ export function toBeBigInt(
   const pass = typeof received === 'bigint'
   const message = getMessage(
     pass,
-    matcherHint('toBeBigInt', undefined, undefined, options),
+    matcherHint('toBeBigInt', NIL, NIL, options),
     printReceived(received),
     printExpected('BigInt'),
   )
@@ -55,7 +73,7 @@ export function toEqualBigInt(
   const pass = typeof received === 'bigint' && received === toBigInt(expected)
   const message = getMessage(
     pass,
-    matcherHint('toEqualBigInt', undefined, undefined, options),
+    matcherHint('toEqualBigInt', NIL, NIL, options),
     printReceived(received),
     printExpected(toBigInt(expected)),
   )
@@ -75,7 +93,7 @@ export function toEqualDate(
     received.getTime() === toDate(expected).getTime()
   const message = getMessage(
     pass,
-    matcherHint('toEqualDate', undefined, undefined, options),
+    matcherHint('toEqualDate', NIL, NIL, options),
     printReceived(received),
     printExpected(toDate(expected)),
   )
@@ -91,7 +109,7 @@ export function toBeTimestamp(
   const pass = typeof received === 'number'
   const message = getMessage(
     pass,
-    matcherHint('toBeTimestamp', undefined, undefined, options),
+    matcherHint('toBeTimestamp', NIL, NIL, options),
     printReceived(received),
     printExpected('Timestamp'),
   )
@@ -110,7 +128,7 @@ export function toEqualTimestamp(
     toDate(received).getTime() === toDate(expected).getTime()
   const message = getMessage(
     pass,
-    matcherHint('toEqualTimestamp', undefined, undefined, options),
+    matcherHint('toEqualTimestamp', NIL, NIL, options),
     printReceived(received),
     printExpected(toDate(expected).getTime()),
   )
@@ -127,7 +145,7 @@ export function toBeValidTimestamp(
     typeof received === 'number' && !isNaN(new Date(received).getTime())
   const message = getMessage(
     pass,
-    matcherHint('toBeValidTimestamp', undefined, undefined, options),
+    matcherHint('toBeValidTimestamp', NIL, NIL, options),
     printReceived(received),
     printExpected('valid timestamp'),
   )

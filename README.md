@@ -1,10 +1,10 @@
 # @potentia/util
 
-Utility collection to make life easier
+A collection of utilities to make life easier
 
- - [types](#types): utilities for `BigInt` and `Date`
+ - [types](#types): utilities for `undefined`, `BigInt` and `Date`
  - [jest matchers](#jest-matchers): [jest](https://jestjs.io) matchers for
-  `BigInt` and `Date`
+  `undefined`, `BigInt` and `Date`
  - [request](#request):
    [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) wrapper
    with timeout support
@@ -14,6 +14,28 @@ Utility collection to make life easier
  - [misc](#misc): other utilities
 
 ## Types
+
+Aliases for `undefined` as `NIL` (for values) and `Nil` (for types) to shorten
+code and improve naming consistency
+
+```typescript
+import { NIL, Nil, TypeOrNil } from '@potentia/util'
+// or import { NIL, ... } from '@potentia/util/type'
+
+assert(NIL === undefined) // NIL is the value alias of undefined
+function returnNIL(): Nil { // Nil is the type alias of undefined
+  return NIL // the same as return undefined
+}
+
+// type utility to create T | undefined type from T
+type FooOrNil = TypeOfNil<Foo> // the same as Foo | Nil or Foo | undefined
+
+// pre-defined types:
+const a: BigIntOrNil = 0n // bigint | undefined
+const b: DateOrNil = NIL // Date | undefined
+const c: NumberOrNil = 0 // number | undefined
+const d: StringOrNil = '' //  string | undefined
+```
 
 Utilities for `BigInt` and `Date` conversion
 
