@@ -114,6 +114,7 @@ import { request } from '@potentia/util'
 const link = 'https://...'
 const res = await request(link, { ... }) // identical to fetch(link, { ... })
 const res = await request(link, { timeout: 30000 }) // fetch() with 30 seconds timeout
+const res = await request('https://user:pass@host/path') // url with credentials is supported as well
 ```
 
 ## Signature
