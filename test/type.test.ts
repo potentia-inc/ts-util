@@ -1,8 +1,39 @@
 import { sleep } from '../src/misc.js'
-import { toBigInt, toBigIntOrNil, toDate, toDateOrNil } from '../src/type.js'
+import {
+  NIL,
+  TypeOrNil,
+  toBigInt,
+  toBigIntOrNil,
+  toDate,
+  toDateOrNil,
+} from '../src/type.js'
 import * as matchers from '../src/jest.js'
 
 expect.extend(matchers)
+
+describe('Nil', () => {
+  test('NIL', () => {
+    expect(NIL === undefined).toBeTruthy()
+  })
+
+  test('TypeOrNil<>', () => {
+    class Foo {}
+    type FooOrNil = TypeOrNil<Foo>
+    const foo: FooOrNil = NIL
+    expect(foo).toBeNil()
+  })
+
+  test('toBeNil()', () => {
+    expect(NIL).toBeNil()
+    expect(undefined).toBeNil()
+    expect(null).not.toBeNil()
+    expect(true).not.toBeNil()
+    expect(false).not.toBeNil()
+    expect(0).not.toBeNil()
+    expect(0n).not.toBeNil()
+    expect('').not.toBeNil()
+  })
+})
 
 describe('bigint', () => {
   test('toBigInt()', async () => {
@@ -18,7 +49,7 @@ describe('bigint', () => {
     expect('123').not.toBeBigInt()
     expect(true).not.toBeBigInt()
     expect(null).not.toBeBigInt()
-    expect(undefined).not.toBeBigInt()
+    expect(NIL).not.toBeBigInt()
   })
 
   test('toBigInt() with error thrown', () => {
@@ -29,7 +60,7 @@ describe('bigint', () => {
 
   test('toBigIntOrNil()', () => {
     expect(toBigIntOrNil(null)).toBeUndefined()
-    expect(toBigIntOrNil(undefined)).toBeUndefined()
+    expect(toBigIntOrNil(NIL)).toBeUndefined()
     expect(toBigIntOrNil(0n)).toBeBigInt()
   })
 
@@ -51,7 +82,7 @@ describe('date', () => {
 
   test('toDateOrNil()', async () => {
     expect(toDateOrNil(null)).toBeUndefined()
-    expect(toDateOrNil(undefined)).toBeUndefined()
+    expect(toDateOrNil(NIL)).toBeUndefined()
     const x = toDate()
     await wait()
     expect(toDateOrNil(x)).not.toEqualDate(new Date())
@@ -73,7 +104,7 @@ describe('date', () => {
     expect('123').not.toBeTimestamp()
     expect(true).not.toBeTimestamp()
     expect(null).not.toBeTimestamp()
-    expect(undefined).not.toBeTimestamp()
+    expect(NIL).not.toBeTimestamp()
     expect(NaN).not.toEqualTimestamp(NaN)
     expect(NaN).not.toBeValidTimestamp()
     expect(Infinity).not.toBeValidTimestamp()

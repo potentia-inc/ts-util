@@ -4,10 +4,18 @@ declare global {
   }
 }
 
-// eslint-disable-next-line no-extend-native
 BigInt.prototype.toJSON = function () {
   return this.toString()
 }
+
+export const NIL = undefined
+export type Nil = typeof NIL
+export type TypeOrNil<T> = T | Nil
+
+export type BigIntOrNil = TypeOrNil<bigint>
+export type DateOrNil = TypeOrNil<Date>
+export type NumberOrNil = TypeOrNil<number>
+export type StringOrNil = TypeOrNil<string>
 
 export function toBigInt(x?: unknown): bigint {
   if (typeof x === 'bigint') return x
@@ -15,21 +23,17 @@ export function toBigInt(x?: unknown): bigint {
   return BigInt(String(x))
 }
 
-export function toBigIntOrNil(x?: unknown): bigint | undefined {
-  return isNil(x) ? undefined : toBigInt(x)
+export function toBigIntOrNil(x?: unknown): BigIntOrNil {
+  return x === NIL || x === null ? NIL : toBigInt(x)
 }
 
 export function toDate(x?: unknown): Date {
   if (x instanceof Date) return x
-  if (isNil(x)) return new Date()
+  if (x === NIL || x === null) return new Date()
   if (typeof x === 'number' || typeof x === 'string') return new Date(x)
   return new Date(String(x))
 }
 
-export function toDateOrNil(x?: unknown): Date | undefined {
-  return isNil(x) ? undefined : toDate(x)
-}
-
-function isNil(x: unknown): boolean {
-  return x === undefined || x === null
+export function toDateOrNil(x?: unknown): DateOrNil {
+  return x === NIL || x === null ? NIL : toDate(x)
 }

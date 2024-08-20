@@ -1,4 +1,5 @@
 import assert from 'node:assert'
+import { TypeOrNil } from './type.js'
 
 export class HTTPError<T = number> extends Error {
   errno?: T
@@ -430,7 +431,7 @@ export function rethrow<S extends Error, D extends Error>(
 export function supress<V, E extends Error = Error>(
   Err: new (message?: string) => E,
   value?: V,
-): (err: unknown) => V | undefined {
+): (err: unknown) => TypeOrNil<V> {
   return (err) => {
     if (err instanceof Err) return value
     throw err
