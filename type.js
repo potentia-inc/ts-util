@@ -1,7 +1,7 @@
-// eslint-disable-next-line no-extend-native
 BigInt.prototype.toJSON = function () {
     return this.toString();
 };
+export const NIL = undefined;
 export function toBigInt(x) {
     if (typeof x === 'bigint')
         return x;
@@ -10,21 +10,18 @@ export function toBigInt(x) {
     return BigInt(String(x));
 }
 export function toBigIntOrNil(x) {
-    return isNil(x) ? undefined : toBigInt(x);
+    return x === NIL || x === null ? NIL : toBigInt(x);
 }
 export function toDate(x) {
     if (x instanceof Date)
         return x;
-    if (isNil(x))
+    if (x === NIL || x === null)
         return new Date();
     if (typeof x === 'number' || typeof x === 'string')
         return new Date(x);
     return new Date(String(x));
 }
 export function toDateOrNil(x) {
-    return isNil(x) ? undefined : toDate(x);
-}
-function isNil(x) {
-    return x === undefined || x === null;
+    return x === NIL || x === null ? NIL : toDate(x);
 }
 //# sourceMappingURL=type.js.map

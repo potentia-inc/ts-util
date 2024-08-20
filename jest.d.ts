@@ -1,4 +1,5 @@
 interface CustomMatchers<R = unknown> {
+    toBeNil: (this: unknown) => R;
     toBeBigInt: (this: unknown) => R;
     toEqualBigInt: (this: unknown, expected: unknown) => R;
     toEqualDate: (this: unknown, expected: unknown) => R;
@@ -16,6 +17,7 @@ declare global {
         }
     }
 }
+export declare function toBeNil(this: unknown, received: unknown): jest.CustomMatcherResult;
 export declare function toBeBigInt(this: unknown, received: unknown): jest.CustomMatcherResult;
 export declare function toEqualBigInt(this: unknown, received: unknown, expected: unknown): jest.CustomMatcherResult;
 export declare function toEqualDate(this: unknown, received: unknown, expected: unknown): jest.CustomMatcherResult;
