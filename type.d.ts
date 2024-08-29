@@ -4,7 +4,8 @@ declare global {
     }
 }
 export declare const NIL: undefined;
-export type Nil = typeof NIL;
+export declare const Nil: undefined;
+export type Nil = typeof undefined;
 export type TypeOrNil<T> = T | Nil;
 export type BigIntOrNil = TypeOrNil<bigint>;
 export type DateOrNil = TypeOrNil<Date>;
