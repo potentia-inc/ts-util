@@ -1,6 +1,10 @@
 # Change log
 
-## [2.1.0] - 2024-08-16
+## [2.1.1] - 2024-08-29
+
+- Alias undefined as Nil for both value and type
+
+## [2.1.0] - 2024-08-20
 
 - Introduce undefined alias Nil/NIL and related types/utilities
 - Support URL with credentials for request()

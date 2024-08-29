@@ -1,6 +1,6 @@
 import { sleep } from '../src/misc.js'
 import {
-  NIL,
+  Nil,
   TypeOrNil,
   toBigInt,
   toBigIntOrNil,
@@ -12,19 +12,19 @@ import * as matchers from '../src/jest.js'
 expect.extend(matchers)
 
 describe('Nil', () => {
-  test('NIL', () => {
-    expect(NIL === undefined).toBeTruthy()
+  test('Nil', () => {
+    expect(Nil === undefined).toBeTruthy()
   })
 
   test('TypeOrNil<>', () => {
     class Foo {}
     type FooOrNil = TypeOrNil<Foo>
-    const foo: FooOrNil = NIL
+    const foo: FooOrNil = Nil
     expect(foo).toBeNil()
   })
 
   test('toBeNil()', () => {
-    expect(NIL).toBeNil()
+    expect(Nil).toBeNil()
     expect(undefined).toBeNil()
     expect(null).not.toBeNil()
     expect(true).not.toBeNil()
@@ -49,7 +49,7 @@ describe('bigint', () => {
     expect('123').not.toBeBigInt()
     expect(true).not.toBeBigInt()
     expect(null).not.toBeBigInt()
-    expect(NIL).not.toBeBigInt()
+    expect(Nil).not.toBeBigInt()
   })
 
   test('toBigInt() with error thrown', () => {
@@ -60,7 +60,7 @@ describe('bigint', () => {
 
   test('toBigIntOrNil()', () => {
     expect(toBigIntOrNil(null)).toBeUndefined()
-    expect(toBigIntOrNil(NIL)).toBeUndefined()
+    expect(toBigIntOrNil(Nil)).toBeUndefined()
     expect(toBigIntOrNil(0n)).toBeBigInt()
   })
 
@@ -82,7 +82,7 @@ describe('date', () => {
 
   test('toDateOrNil()', async () => {
     expect(toDateOrNil(null)).toBeUndefined()
-    expect(toDateOrNil(NIL)).toBeUndefined()
+    expect(toDateOrNil(Nil)).toBeUndefined()
     const x = toDate()
     await wait()
     expect(toDateOrNil(x)).not.toEqualDate(new Date())
@@ -104,7 +104,7 @@ describe('date', () => {
     expect('123').not.toBeTimestamp()
     expect(true).not.toBeTimestamp()
     expect(null).not.toBeTimestamp()
-    expect(NIL).not.toBeTimestamp()
+    expect(Nil).not.toBeTimestamp()
     expect(NaN).not.toEqualTimestamp(NaN)
     expect(NaN).not.toBeValidTimestamp()
     expect(Infinity).not.toBeValidTimestamp()

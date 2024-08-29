@@ -15,16 +15,15 @@ A collection of utilities to make life easier
 
 ## Types
 
-Aliases for `undefined` as `NIL` (for values) and `Nil` (for types) to shorten
-code and improve naming consistency
+Aliases for `undefined` as `Nil` to shorten code and improve naming consistency
 
 ```typescript
-import { NIL, Nil, TypeOrNil } from '@potentia/util'
-// or import { NIL, ... } from '@potentia/util/type'
+import { Nil, TypeOrNil } from '@potentia/util'
+// or import { Nil, ... } from '@potentia/util/type'
 
-assert(NIL === undefined) // NIL is the value alias of undefined
-function returnNIL(): Nil { // Nil is the type alias of undefined
-  return NIL // the same as return undefined
+assert(Nil === undefined) // Nil is the value alias of undefined
+function returnNil(): Nil { // Nil is also the type alias of undefined
+  return Nil // the same as return undefined
 }
 
 // type utility to create T | undefined type from T
@@ -32,7 +31,7 @@ type FooOrNil = TypeOfNil<Foo> // the same as Foo | Nil or Foo | undefined
 
 // pre-defined types:
 const a: BigIntOrNil = 0n // bigint | undefined
-const b: DateOrNil = NIL // Date | undefined
+const b: DateOrNil = Nil // Date | undefined
 const c: NumberOrNil = 0 // number | undefined
 const d: StringOrNil = '' //  string | undefined
 ```

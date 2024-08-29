@@ -1,6 +1,6 @@
 // /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
-import { NIL, toBigInt, toDate } from './index.js'
+import { Nil, toBigInt, toDate } from './index.js'
 import { matcherHint, printExpected, printReceived } from 'jest-matcher-utils'
 
 interface CustomMatchers<R = unknown> {
@@ -35,10 +35,10 @@ export function toBeNil(
   const { isNot, promise } = this as unknown as This
   const comment = 'Nil type validity'
   const options = { comment, isNot, promise }
-  const pass = received === NIL
+  const pass = received === Nil
   const message = getMessage(
     pass,
-    matcherHint('toBeNil', NIL, NIL, options),
+    matcherHint('toBeNil', Nil, Nil, options),
     printReceived(received),
     printExpected('Nil'),
   )
@@ -55,7 +55,7 @@ export function toBeBigInt(
   const pass = typeof received === 'bigint'
   const message = getMessage(
     pass,
-    matcherHint('toBeBigInt', NIL, NIL, options),
+    matcherHint('toBeBigInt', Nil, Nil, options),
     printReceived(received),
     printExpected('BigInt'),
   )
@@ -73,7 +73,7 @@ export function toEqualBigInt(
   const pass = typeof received === 'bigint' && received === toBigInt(expected)
   const message = getMessage(
     pass,
-    matcherHint('toEqualBigInt', NIL, NIL, options),
+    matcherHint('toEqualBigInt', Nil, Nil, options),
     printReceived(received),
     printExpected(toBigInt(expected)),
   )
@@ -93,7 +93,7 @@ export function toEqualDate(
     received.getTime() === toDate(expected).getTime()
   const message = getMessage(
     pass,
-    matcherHint('toEqualDate', NIL, NIL, options),
+    matcherHint('toEqualDate', Nil, Nil, options),
     printReceived(received),
     printExpected(toDate(expected)),
   )
@@ -109,7 +109,7 @@ export function toBeTimestamp(
   const pass = typeof received === 'number'
   const message = getMessage(
     pass,
-    matcherHint('toBeTimestamp', NIL, NIL, options),
+    matcherHint('toBeTimestamp', Nil, Nil, options),
     printReceived(received),
     printExpected('Timestamp'),
   )
@@ -128,7 +128,7 @@ export function toEqualTimestamp(
     toDate(received).getTime() === toDate(expected).getTime()
   const message = getMessage(
     pass,
-    matcherHint('toEqualTimestamp', NIL, NIL, options),
+    matcherHint('toEqualTimestamp', Nil, Nil, options),
     printReceived(received),
     printExpected(toDate(expected).getTime()),
   )
@@ -145,7 +145,7 @@ export function toBeValidTimestamp(
     typeof received === 'number' && !isNaN(new Date(received).getTime())
   const message = getMessage(
     pass,
-    matcherHint('toBeValidTimestamp', NIL, NIL, options),
+    matcherHint('toBeValidTimestamp', Nil, Nil, options),
     printReceived(received),
     printExpected('valid timestamp'),
   )
