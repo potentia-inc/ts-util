@@ -1,5 +1,9 @@
 # Change log
 
+## [3.0.0] - 2025-02-03
+
+- Upgrade to node-22
+
 ## [2.1.1] - 2024-08-29
 
 - Alias undefined as Nil for both value and type
