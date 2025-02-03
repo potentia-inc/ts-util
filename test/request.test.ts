@@ -33,6 +33,7 @@ describe('request', () => {
           ).toString('utf8')
           if (credential === `${username}:${password}`) return
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         // supress the errors
       }
