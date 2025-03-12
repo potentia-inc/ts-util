@@ -1,5 +1,12 @@
 # Change log
 
+## [3.1.0] - 2025-03-12
+
+- Add more pre-defined types: `NumStr`, `NnmStrOrNil`, `BufferOrNil`
+- Add more cast functions: `toNumber()`, `toNumberOrNil()`, `toString()`, `toStringOrNil()`
+- Add helper function: `isNullish()`
+- Add more type utilities: `PickRequired`, `PickPartial`, `MixRequiredPartial`
+
 ## [3.0.0] - 2025-02-03
 
 - Upgrade to node-22

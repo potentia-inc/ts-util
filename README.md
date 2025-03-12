@@ -25,6 +25,18 @@ assert(Nil === undefined) // Nil is the value alias of undefined
 function returnNil(): Nil { // Nil is also the type alias of undefined
   return Nil // the same as return undefined
 }
+```
+
+Type utilities
+
+```typescript
+import {
+  TypeOrNil,
+  PickRequired,
+  PickPartial,
+  MixRequiredPartial,
+} from '@potentia/util'
+// or import { TypeOrNil, ... } from '@potentia/util/type'
 
 // type utility to create T | undefined type from T
 type FooOrNil = TypeOfNil<Foo> // the same as Foo | Nil or Foo | undefined
@@ -34,13 +46,51 @@ const a: BigIntOrNil = 0n // bigint | undefined
 const b: DateOrNil = Nil // Date | undefined
 const c: NumberOrNil = 0 // number | undefined
 const d: StringOrNil = '' //  string | undefined
+const e: BufferOrNil = Nil // Buffer | undefined
+const f: NumStr = '123.456'
+const g: NumStrOrNil = Nil // NumStr | undefined
+
+// type utility to fine-tune the object field
+type A = {
+  a: string
+  b: number
+  c?: Date
+  d?: boolean
+  e?: Buffer
+}
+
+// A['c'] and A['d'] are required now
+const a1 = PickRequired<A, 'c' | 'd'> = { a: 'foo', b: 123, c: new Date(), d: false }
+
+// A['a'] is optional now
+const a2 = PickPartial<A, 'a'> = { b: 123 }
+
+// A['c'] and A['d'] are required and A['a'] is optional now
+const a3 = MixRequiredPartial<A, 'c' | 'd', 'a'> = { b: 123, c: new Date(), d: false }}
 ```
 
-Utilities for `BigInt` and `Date` conversion
+Utilities for `number`, `string`, `bigint`, `Date` conversion
 
 ```typescript
-import { toBigInt, toBigIntOrNil, toDate, toDateOrNil } from '@potentia/util'
+import {
+  toBigInt,
+  toBigIntOrNil,
+  toDate,
+  toDateOrNil,
+  toNumber,
+  toNumberOrNil,
+  toString,
+  toStringOrNil,
+} from '@potentia/util'
 // or import { toBigInt, ... } from '@potentia/util/type'
+
+toNumber(0) // alias of Number(0)
+toNumber('0') // alias of Number('0')
+toNumberOrNil() // undefined
+
+toString(0) // alias of String(0)
+toString('0') // alias of String('0')
+toStringOrNil() // undefined
 
 toBigInt(0) // 0n
 toBigInt('0') // 0n

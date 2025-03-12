@@ -1,7 +1,7 @@
-import { Nil } from './type.js';
+import { Nil, isNullish } from './type.js';
 export async function request(url, options = {}) {
     const { timeout, ...init } = options;
-    if (timeout !== Nil && timeout !== null)
+    if (!isNullish(timeout))
         init.signal = AbortSignal.timeout(timeout);
     const _url = new URL(url);
     const { username, password } = _url;
