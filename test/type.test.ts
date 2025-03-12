@@ -1,11 +1,18 @@
 import { sleep } from '../src/misc.js'
 import {
   Nil,
-  TypeOrNil,
   toBigInt,
   toBigIntOrNil,
   toDate,
   toDateOrNil,
+  toNumber,
+  toNumberOrNil,
+  toString,
+  toStringOrNil,
+  PickRequired,
+  PickPartial,
+  MixRequiredPartial,
+  TypeOrNil,
 } from '../src/type.js'
 import * as matchers from '../src/jest.js'
 
@@ -35,10 +42,43 @@ describe('Nil', () => {
   })
 })
 
+describe('type utility', () => {
+  test('PickPartial', () => {
+    type Foo = {
+      a: string
+      b: number
+    }
+    const foo: PickPartial<Foo, 'b'> = { a: 'bar' }
+    expect(foo.a).toBe('bar')
+    expect(foo.b).toBeUndefined()
+  })
+
+  test('PickRequired', () => {
+    type Foo = {
+      a?: string
+      b?: number
+    }
+    const foo: PickRequired<Foo, 'a'> = { a: 'bar' }
+    expect(foo.a).toBe('bar')
+    expect(foo.b).toBeUndefined()
+  })
+
+  test('MixRequiredPartial', () => {
+    type Foo = {
+      a?: string
+      b: number
+      c: boolean
+    }
+    const foo: MixRequiredPartial<Foo, 'a', 'b'> = { a: 'bar', c: true }
+    expect(foo.a).toBe('bar')
+    expect(foo.b).toBeUndefined()
+    expect(foo.c).toBe(true)
+  })
+})
+
 describe('bigint', () => {
   test('toBigInt()', async () => {
     const x = toBigInt(12345)
-    await wait()
     expect(x).toBeBigInt()
     expect(x).toEqualBigInt(x)
     expect(x).toEqualBigInt(12345)
@@ -109,6 +149,42 @@ describe('date', () => {
     expect(NaN).not.toBeValidTimestamp()
     expect(Infinity).not.toBeValidTimestamp()
     expect(-Infinity).not.toBeValidTimestamp()
+  })
+})
+
+describe('number', () => {
+  it('toNumber()', async () => {
+    expect(toNumber(123)).toBe(Number(123))
+    expect(toNumber(123)).not.toBe(Number(456))
+    expect(toNumber('456')).toBe(Number('456'))
+    expect(toNumber('456')).not.toBe(Number('123'))
+  })
+
+  test('toNumberOrNil()', async () => {
+    expect(toNumberOrNil(Nil)).toBeUndefined()
+    expect(toNumberOrNil(null)).toBeUndefined()
+    expect(toNumberOrNil(123)).toBe(Number(123))
+    expect(toNumberOrNil(123)).not.toBe(Number(456))
+    expect(toNumberOrNil('456')).toBe(Number('456'))
+    expect(toNumberOrNil('456')).not.toBe(Number('123'))
+  })
+})
+
+describe('string', () => {
+  it('toString()', async () => {
+    expect(toString(123)).toBe(String(123))
+    expect(toString(123)).not.toBe(String(456))
+    expect(toString('456')).toBe(String('456'))
+    expect(toString('456')).not.toBe(String('123'))
+  })
+
+  test('toStringOrNil()', async () => {
+    expect(toStringOrNil(Nil)).toBeUndefined()
+    expect(toStringOrNil(null)).toBeUndefined()
+    expect(toStringOrNil(123)).toBe(String(123))
+    expect(toStringOrNil(123)).not.toBe(String(456))
+    expect(toStringOrNil('456')).toBe(String('456'))
+    expect(toStringOrNil('456')).not.toBe(String('123'))
   })
 })
 

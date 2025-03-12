@@ -1,12 +1,11 @@
-import { Nil } from './type.js'
+import { Nil, isNullish } from './type.js'
 
 export async function request(
   url: string,
   options: RequestInit & { timeout?: number } = {},
 ): Promise<Response> {
   const { timeout, ...init } = options
-  if (timeout !== Nil && timeout !== null)
-    init.signal = AbortSignal.timeout(timeout)
+  if (!isNullish(timeout)) init.signal = AbortSignal.timeout(timeout)
   const _url = new URL(url)
   const { username, password } = _url
   _url.username = ''
