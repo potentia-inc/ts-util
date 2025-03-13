@@ -368,4 +368,12 @@ export function supress(Err, value) {
         throw err;
     };
 }
+function isErrorLike(error) {
+    return (error !== null &&
+        typeof error === 'object' &&
+        typeof error.message === 'string');
+}
+export function getMessage(error) {
+    return isErrorLike(error) ? error.message : String(error);
+}
 //# sourceMappingURL=error.js.map

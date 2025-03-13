@@ -136,3 +136,4 @@ export declare class NetworkAuthenticationRequiredError<T = number> extends Serv
 export declare function createHTTPError<T = number>(status: number, message?: string, errno?: T): HTTPError<T>;
 export declare function rethrow<S extends Error, D extends Error>(Src: new (message?: string) => S, Dst: new (message?: string) => D): (err: unknown) => never;
 export declare function supress<V, E extends Error = Error>(Err: new (message?: string) => E, value?: V): (err: unknown) => TypeOrNil<V>;
+export declare function getMessage(error: unknown): string;
