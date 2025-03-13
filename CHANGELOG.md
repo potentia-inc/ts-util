@@ -1,5 +1,9 @@
 # Change log
 
+## [3.2.0] - 2025-03-13
+
+- Add `getMessage()` to get error's message
+
 ## [3.1.0] - 2025-03-12
 
 - Add more pre-defined types: `NumStr`, `NnmStrOrNil`, `BufferOrNil`
