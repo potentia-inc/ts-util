@@ -44,6 +44,7 @@ import {
   URITooLongError,
   VariantAlsoNegotiatesError,
   createHTTPError,
+  getMessage,
   rethrow,
   supress,
 } from '../src/error.js'
@@ -197,6 +198,13 @@ describe('error utilities', () => {
     await expect(
       resolve('foobar').catch(supress<string, OmitError>(OmitError)),
     ).resolves.toBe('foobar')
+  })
+
+  test('getMessage', () => {
+    expect(getMessage(new Error('foobar'))).toBe('foobar')
+    expect(getMessage({ message: 'foobar' })).toBe('foobar')
+    expect(getMessage('foobar')).toBe('foobar')
+    expect(getMessage({ foo: 'bar' })).toEqual(expect.any(String))
   })
 
   function resolve(x: string): Promise<string> {

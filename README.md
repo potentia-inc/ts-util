@@ -198,6 +198,7 @@ import {
   createHTTPError,
   rethrow,
   supress,
+  getMessage,
 } from '@potentia/util'
 // or import { ... } from '@potentia/util/error'
 
@@ -260,6 +261,10 @@ Promise.reject(new B()).catch(supress(B, 'foobar')) // resolve with 'foobar'
 Promise.reject(new B()).catch(supress(B)) // resolve with undefined
 Promise.reject(new B()).catch(supress<string>(B)) // return type specified explicitly
 Promise.reject(new B()).catch(supress<string, B>(B)) // types specified explicitly
+
+// get message
+getMessage(new Error('foo')) // get 'foo'
+getMessage({ message: 'bar' }) // get 'bar'
 ```
 
 ## Misc

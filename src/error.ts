@@ -437,3 +437,19 @@ export function supress<V, E extends Error = Error>(
     throw err
   }
 }
+
+interface ErrorLike {
+  message: string
+}
+
+function isErrorLike(error: unknown): error is ErrorLike {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  )
+}
+
+export function getMessage(error: unknown): string {
+  return isErrorLike(error) ? error.message : String(error)
+}
