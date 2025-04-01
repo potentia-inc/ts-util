@@ -1,5 +1,9 @@
 # Change log
 
+## [3.3.0] - 2025-04-01
+
+- Introduce `ssleep()` and `msleep()`
+
 ## [3.2.0] - 2025-03-13
 
 - Add `getMessage()` to get error's message
