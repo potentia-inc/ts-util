@@ -270,9 +270,11 @@ getMessage({ message: 'bar' }) // get 'bar'
 ## Misc
 
 ```typescript
-import { option, sleep } from '@potentia/util'
+import { option, sleep, ssleep, msleep } from '@potentia/util'
 
-await sleep(123) // sleep 123 milliseconds
+await ssleep(0.123) // sleep 0.123 second
+await msleep(123) // sleep 123 milliseconds
+await sleep(123) // the same as msleep(123) for backward compatibility
 
 option('foo', bar) // => { 'foo': 'bar' }
 option('foo', 123.345) // => { 'foo': 123.456 }
