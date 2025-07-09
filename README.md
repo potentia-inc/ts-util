@@ -11,6 +11,8 @@ A collection of utilities to make life easier
  - [signature](#signature): utilities to sign the content and verify the
    signature digests
  - [error](#error): predefiend HTTP error classes and utilities
+ - [promise](#promise): `Promise` related utilities
+ - [abort-controller](#abort-controller): `AbortController` related utilities
  - [misc](#misc): other utilities
 
 ## Types
@@ -265,6 +267,53 @@ Promise.reject(new B()).catch(supress<string, B>(B)) // types specified explicit
 // get message
 getMessage(new Error('foo')) // get 'foo'
 getMessage({ message: 'bar' }) // get 'bar'
+```
+## Promise
+
+```typescript
+import { PromiseTracker } from '@potentia/util'
+
+const promise = ...
+const tracker = new PromiseTracker(promise)
+
+/*
+you can check if the promise is settled before awaiting it.
+
+Note: You should wait for a tick to get the correct state due to
+the limitation of javascript
+*/
+await setImmediate() // wait a tick
+if (tracker.isSettled) {
+  await tracker.promise
+}
+```
+
+## Abort-Controller
+
+```typescript
+import { TimeoutAbortController } from '@potentia/util'
+
+const p = new AbortController()
+const c = new TimeoutAbortController({
+  signal: a.signal, // optional
+  timeout: 5, // in second
+})
+
+/*
+aborter.signal is aborted if
+  1. signal is aborted (if provided), or
+  2. timeout (5 seconds later), or
+  3. aborter.abort() is called.
+*/
+
+// case 1:
+p.aborted() // c.signal is also aborted
+
+// case 2:
+await ssleep(6) // c.signal is aborted due to timeout
+
+// case 3:
+c.aborted() // c.signal is aborted
 ```
 
 ## Misc

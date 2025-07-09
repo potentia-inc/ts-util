@@ -1,5 +1,9 @@
 # Change log
 
+## [3.4.0] - 2025-07-09
+
+- Introduce `PromiseTracker` and `TimeoutAbortController`
+
 ## [3.3.0] - 2025-04-01
 
 - Introduce `ssleep()` and `msleep()`

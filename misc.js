@@ -6,8 +6,9 @@ export async function ssleep(s) {
     return msleep(s * 1000);
 }
 export async function msleep(ms) {
-    await setTimeout(ms);
-    return ms >= 1 && ms <= 2147483647;
+    const invalid = isNaN(ms) || ms < 1 || ms > 2147483647;
+    await setTimeout(invalid ? 1 : ms);
+    return !invalid;
 }
 export function option(key, value) {
     return value === Nil || value === null ? Nil : { [key]: value };
