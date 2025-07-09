@@ -31,6 +31,7 @@ describe('sleep', () => {
     expect(Math.abs(duration / 1000 - s) <= 0.1 * s).toBeTruthy()
     expect(await ssleep(0.0005)).toBe(false)
     expect(await ssleep(2147483.648)).toBe(false)
+    expect(await ssleep(NaN)).toBe(false)
   })
 
   test('msleep', async () => {
@@ -41,5 +42,6 @@ describe('sleep', () => {
     expect(Math.abs(duration - ms) <= 0.1 * ms).toBeTruthy()
     expect(await msleep(0.5)).toBe(false)
     expect(await msleep(2147483648)).toBe(false)
+    expect(await msleep(NaN)).toBe(false)
   })
 })
