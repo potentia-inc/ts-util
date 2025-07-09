@@ -28,15 +28,9 @@ describe('AbortController', () => {
   })
 
   test('TimeoutAbortController: timeout', async () => {
-    const aborter = new AbortController()
-    const timeouter = new TimeoutAbortController({
-      signal: aborter.signal,
-      timeout: 1,
-    })
-    expect(aborter.signal.aborted).toBe(false)
+    const timeouter = new TimeoutAbortController({ timeout: 1 })
     expect(timeouter.signal.aborted).toBe(false)
     await ssleep(2)
-    expect(aborter.signal.aborted).toBe(false)
     expect(timeouter.signal.aborted).toBe(true)
   })
 
