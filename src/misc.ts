@@ -9,8 +9,9 @@ export async function ssleep(s: number) {
 }
 
 export async function msleep(ms: number) {
-  await setTimeout(ms)
-  return ms >= 1 && ms <= 2147483647
+  const invalid = isNaN(ms) || ms < 1 || ms > 2147483647
+  await setTimeout(invalid ? 1 : ms)
+  return !invalid
 }
 
 export function option<T>(
