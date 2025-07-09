@@ -1,5 +1,9 @@
 # Change log
 
+## [3.4.1] - 2025-07-09
+
+- Export the new symbols
+
 ## [3.4.0] - 2025-07-09
 
 - Introduce `PromiseTracker` and `TimeoutAbortController`
