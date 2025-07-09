@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "utilities",
   "main": "./index.js",
   "scripts": {

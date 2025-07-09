@@ -302,7 +302,7 @@ const c = new TimeoutAbortController({
 /*
 aborter.signal is aborted if
   1. signal is aborted (if provided), or
-  2. timeouted (5 seconds later), or
+  2. timeout (5 seconds later), or
   3. aborter.abort() is called.
 */
 
@@ -310,7 +310,7 @@ aborter.signal is aborted if
 p.aborted() // c.signal is also aborted
 
 // case 2:
-await ssleep(6) // c.signal is aborted
+await ssleep(6) // c.signal is aborted due to timeout
 
 // case 3:
 c.aborted() // c.signal is aborted
