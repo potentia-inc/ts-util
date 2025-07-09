@@ -11,7 +11,7 @@ A collection of utilities to make life easier
  - [signature](#signature): utilities to sign the content and verify the
    signature digests
  - [error](#error): predefiend HTTP error classes and utilities
- - [promise](#promie): `Promise` related utilities
+ - [promise](#promise): `Promise` related utilities
  - [abort-controller](#abort-controller): `AbortController` related utilities
  - [misc](#misc): other utilities
 
@@ -288,9 +288,10 @@ if (tracker.isSettled) {
 }
 ```
 
-## AbortController
+## Abort-Controller
 
 ```typescript
+import { TimeoutAbortController } from '@potentia/util'
 
 const p = new AbortController()
 const c = new TimeoutAbortController({
