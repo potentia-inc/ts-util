@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "utilities",
   "main": "./index.js",
   "scripts": {
@@ -32,8 +32,10 @@
   "type": "module",
   "exports": {
     ".": "./index.js",
+    "./abort-controller": "./abort-controller",
     "./error": "./error.js",
     "./jest": "./jest.js",
+    "./promise": "./promise",
     "./request": "./request.js",
     "./signature": "./signature.js",
     "./type": "./type.js"
