@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "3.4.1",
+  "version": "3.5.0",
   "description": "utilities",
   "main": "./index.js",
   "scripts": {
@@ -9,14 +9,16 @@
     "fix": "npm run lint && npm run pretty",
     "lint": "eslint --fix .",
     "pretty": "prettier --write .",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+    "test:jest": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test:node": "node --test --experimental-test-coverage dist/test/**/*.{cjs,mjs,js}",
+    "test": "npm run test:jest && npm run test:node"
   },
   "author": "Potentia Computing Inc.",
   "license": "MIT",
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.0",
+    "@tsconfig/node24": "^24.0.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
@@ -41,6 +43,6 @@
     "./type": "./type.js"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   }
 }
