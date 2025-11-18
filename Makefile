@@ -1,6 +1,6 @@
 .PHONY: test clean lint pretty dist
 
-IMAGE=node:22-slim
+IMAGE=node:24-slim
 USER=$(shell id -u):$(shell id -g)
 WORKDIR=/app
 VOLUME=$(PWD):$(WORKDIR)

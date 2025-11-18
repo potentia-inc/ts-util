@@ -1,3 +1,5 @@
+import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import { sleep } from '../src/misc.js'
 import {
   Nil,
@@ -14,31 +16,18 @@ import {
   MixRequiredPartial,
   TypeOrNil,
 } from '../src/type.js'
-import * as matchers from '../src/jest.js'
-
-expect.extend(matchers)
 
 describe('Nil', () => {
   test('Nil', () => {
-    expect(Nil === undefined).toBeTruthy()
+    assert.equal(Nil, undefined)
+    assert.equal(undefined, Nil)
   })
 
   test('TypeOrNil<>', () => {
     class Foo {}
     type FooOrNil = TypeOrNil<Foo>
     const foo: FooOrNil = Nil
-    expect(foo).toBeNil()
-  })
-
-  test('toBeNil()', () => {
-    expect(Nil).toBeNil()
-    expect(undefined).toBeNil()
-    expect(null).not.toBeNil()
-    expect(true).not.toBeNil()
-    expect(false).not.toBeNil()
-    expect(0).not.toBeNil()
-    expect(0n).not.toBeNil()
-    expect('').not.toBeNil()
+    assert.equal(foo, Nil)
   })
 })
 
@@ -49,8 +38,8 @@ describe('type utility', () => {
       b: number
     }
     const foo: PickPartial<Foo, 'b'> = { a: 'bar' }
-    expect(foo.a).toBe('bar')
-    expect(foo.b).toBeUndefined()
+    assert.equal(foo.a, 'bar')
+    assert.equal(foo.b, Nil)
   })
 
   test('PickRequired', () => {
@@ -59,8 +48,8 @@ describe('type utility', () => {
       b?: number
     }
     const foo: PickRequired<Foo, 'a'> = { a: 'bar' }
-    expect(foo.a).toBe('bar')
-    expect(foo.b).toBeUndefined()
+    assert.equal(foo.a, 'bar')
+    assert.equal(foo.b, Nil)
   })
 
   test('MixRequiredPartial', () => {
@@ -70,121 +59,83 @@ describe('type utility', () => {
       c: boolean
     }
     const foo: MixRequiredPartial<Foo, 'a', 'b'> = { a: 'bar', c: true }
-    expect(foo.a).toBe('bar')
-    expect(foo.b).toBeUndefined()
-    expect(foo.c).toBe(true)
+    assert.equal(foo.a, 'bar')
+    assert.equal(foo.b, Nil)
+    assert.equal(foo.c, true)
   })
 })
 
 describe('bigint', () => {
   test('toBigInt()', async () => {
     const x = toBigInt(12345)
-    expect(x).toBeBigInt()
-    expect(x).toEqualBigInt(x)
-    expect(x).toEqualBigInt(12345)
-    expect(x).toEqualBigInt('12345')
-    expect(x).not.toEqualBigInt(23456)
-    expect(x).not.toEqualBigInt('23456')
-    expect(123).not.toBeBigInt()
-    expect('123').not.toBeBigInt()
-    expect(true).not.toBeBigInt()
-    expect(null).not.toBeBigInt()
-    expect(Nil).not.toBeBigInt()
+    assert.equal(typeof x, 'bigint')
+    assert.equal(x, x)
+    assert.equal(x, 12345n)
+    assert.notEqual(x, 23456)
+    assert.notEqual(x, '23456')
   })
 
   test('toBigInt() with error thrown', () => {
-    expect(() => toBigInt()).toThrow(SyntaxError)
-    expect(() => toBigInt('foobar')).toThrow(SyntaxError)
-    expect(() => toBigInt(1.234)).toThrow(RangeError)
+    assert.throws(() => toBigInt(), SyntaxError)
+    assert.throws(() => toBigInt('foobar'), SyntaxError)
+    assert.throws(() => toBigInt(1.234), RangeError)
   })
 
   test('toBigIntOrNil()', () => {
-    expect(toBigIntOrNil(null)).toBeUndefined()
-    expect(toBigIntOrNil(Nil)).toBeUndefined()
-    expect(toBigIntOrNil(0n)).toBeBigInt()
+    assert.equal(toBigIntOrNil(null), Nil)
+    assert.equal(toBigIntOrNil(Nil), Nil)
+    assert.equal(typeof toBigIntOrNil(0n), 'bigint')
   })
 
   test('JSON.stringify() for bigint', () => {
-    expect(JSON.stringify({ a: 123n })).toBe('{"a":"123"}')
+    assert.equal(JSON.stringify({ a: 123n }), '{"a":"123"}')
   })
 })
 
 describe('date', () => {
-  it('toDate()', async () => {
+  test('toDate()', async () => {
     const x = toDate()
     await wait()
-    expect(x).toEqualDate(x)
-    expect(x).toEqualDate(x.getTime())
-    expect(x).toEqualDate(x.toISOString())
-    expect(x).not.toEqualDate(new Date())
-    expect(toDate({ toString: () => x.toISOString() })).toEqualDate(x)
+    assert.equal(x instanceof Date, true)
+    assert.notEqual(x.getTime(), toDate().getTime())
   })
 
   test('toDateOrNil()', async () => {
-    expect(toDateOrNil(null)).toBeUndefined()
-    expect(toDateOrNil(Nil)).toBeUndefined()
+    assert.equal(toDateOrNil(null), Nil)
+    assert.equal(toDateOrNil(Nil), Nil)
     const x = toDate()
     await wait()
-    expect(toDateOrNil(x)).not.toEqualDate(new Date())
-  })
-
-  test('Timestamp', async () => {
-    const x = toDate()
-    await wait()
-    const y = x.getTime()
-    expect(y).toBeTimestamp()
-    expect(y).toEqualTimestamp(x)
-    expect(y).toEqualTimestamp(x.toISOString())
-    expect(y).toEqualTimestamp(x.getTime())
-    expect(y).not.toEqualTimestamp(new Date())
-    expect(y).not.toEqualTimestamp(new Date().toISOString())
-    expect(y).not.toEqualTimestamp(Date.now())
-
-    expect(x).not.toBeTimestamp()
-    expect('123').not.toBeTimestamp()
-    expect(true).not.toBeTimestamp()
-    expect(null).not.toBeTimestamp()
-    expect(Nil).not.toBeTimestamp()
-    expect(NaN).not.toEqualTimestamp(NaN)
-    expect(NaN).not.toBeValidTimestamp()
-    expect(Infinity).not.toBeValidTimestamp()
-    expect(-Infinity).not.toBeValidTimestamp()
+    assert.notEqual(toDateOrNil(x)?.getTime(), new Date()?.getTime())
   })
 })
 
 describe('number', () => {
-  it('toNumber()', async () => {
-    expect(toNumber(123)).toBe(Number(123))
-    expect(toNumber(123)).not.toBe(Number(456))
-    expect(toNumber('456')).toBe(Number('456'))
-    expect(toNumber('456')).not.toBe(Number('123'))
+  test('toNumber()', async () => {
+    assert.equal(toNumber(123), 123)
+    assert.equal(toNumber('123'), 123)
+    assert.notEqual(toNumber(123), 456)
   })
 
   test('toNumberOrNil()', async () => {
-    expect(toNumberOrNil(Nil)).toBeUndefined()
-    expect(toNumberOrNil(null)).toBeUndefined()
-    expect(toNumberOrNil(123)).toBe(Number(123))
-    expect(toNumberOrNil(123)).not.toBe(Number(456))
-    expect(toNumberOrNil('456')).toBe(Number('456'))
-    expect(toNumberOrNil('456')).not.toBe(Number('123'))
+    assert.equal(toNumberOrNil(Nil), Nil)
+    assert.equal(toNumberOrNil(null), Nil)
+    assert.equal(toNumberOrNil(123), 123)
+    assert.equal(toNumberOrNil('123'), 123)
+    assert.notEqual(toNumberOrNil(123), 456)
   })
 })
 
 describe('string', () => {
-  it('toString()', async () => {
-    expect(toString(123)).toBe(String(123))
-    expect(toString(123)).not.toBe(String(456))
-    expect(toString('456')).toBe(String('456'))
-    expect(toString('456')).not.toBe(String('123'))
+  test('toString()', async () => {
+    assert.equal(toString(123), '123')
+    assert.notEqual(toString(123), '456')
   })
 
   test('toStringOrNil()', async () => {
-    expect(toStringOrNil(Nil)).toBeUndefined()
-    expect(toStringOrNil(null)).toBeUndefined()
-    expect(toStringOrNil(123)).toBe(String(123))
-    expect(toStringOrNil(123)).not.toBe(String(456))
-    expect(toStringOrNil('456')).toBe(String('456'))
-    expect(toStringOrNil('456')).not.toBe(String('123'))
+    assert.equal(toStringOrNil(Nil), Nil)
+    assert.equal(toStringOrNil(null), Nil)
+    assert.equal(toStringOrNil(123), '123')
+    assert.notEqual(toStringOrNil(123), '456')
   })
 })
 

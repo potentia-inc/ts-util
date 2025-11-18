@@ -1,5 +1,10 @@
 # Change log
 
+## [3.5.0] - 2025-11-17
+
+- Support node@^24.0.0
+- Use node:test instead of jest
+
 ## [3.4.1] - 2025-07-09
 
 - Export the new symbols
