@@ -1,4 +1,5 @@
-import assert from 'node:assert'
+import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import { RequestListener, createServer } from 'node:http'
 import { request } from '../src/index.js'
 
@@ -6,13 +7,13 @@ describe('request', () => {
   test('request()', async () => {
     const { link, stop } = await start()
     const res = await request(link)
-    expect(res.status).toBe(200)
+    assert.equal(res.status, 200)
     await stop()
   })
 
   test('request() with timeout error', async () => {
     const { link, stop } = await start({ timeout: 10000 })
-    await expect(request(link, { timeout: 1 })).rejects.toThrow(/timeout/)
+    await assert.rejects(request(link, { timeout: 1 }), /timeout/)
     await stop()
   })
 
@@ -42,18 +43,18 @@ describe('request', () => {
     const { link, stop } = await start({ exec })
 
     // no credential
-    expect((await request(link)).status).toBe(401)
+    assert.equal((await request(link)).status, 401)
 
     // wrong credential
     const url = new URL(link)
     url.username = 'ooo'
     url.password = 'xxx'
-    expect((await request(url.toString())).status).toBe(401)
+    assert.equal((await request(url.toString())).status, 401)
 
     // correct credential
     url.username = username
     url.password = password
-    expect((await request(url.toString())).status).toBe(200)
+    assert.equal((await request(url.toString())).status, 200)
 
     await stop()
   })

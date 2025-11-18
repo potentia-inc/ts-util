@@ -1,3 +1,5 @@
+import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import { setImmediate } from 'node:timers/promises'
 
 import { ssleep } from '../src/misc.js'
@@ -7,9 +9,9 @@ import { Nil } from '../src/type.js'
 describe('PromiseTracker', () => {
   test('PromiseTracker: already resolved', async () => {
     const tracker = new PromiseTracker(Promise.resolve(Nil))
-    expect(tracker.isSettled).toBe(false)
+    assert.equal(tracker.isSettled, false)
     await setImmediate()
-    expect(tracker.isSettled).toBe(true)
+    assert.equal(tracker.isSettled, true)
   })
 
   test('PromiseTracker', async () => {
@@ -18,9 +20,9 @@ describe('PromiseTracker', () => {
         ssleep(1).then(() => resolve(Nil))
       }),
     )
-    expect(tracker.isSettled).toBe(false)
+    assert.equal(tracker.isSettled, false)
     await ssleep(1)
-    expect(tracker.isSettled).toBe(true)
-    expect(await tracker.promise).toBe(Nil)
+    assert.equal(tracker.isSettled, true)
+    assert.equal(await tracker.promise, Nil)
   })
 })

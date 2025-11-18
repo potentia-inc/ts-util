@@ -1,3 +1,5 @@
+import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import { sign, verify } from '../src/signature.js'
 
 describe('signature', () => {
@@ -19,18 +21,20 @@ describe('signature', () => {
 
   test('sign()', () => {
     for (const [algo, hex] of pairs) {
-      expect(sign(algo, key, content).toString('hex')).toBe(hex)
+      assert.equal(sign(algo, key, content).toString('hex'), hex)
     }
   })
 
   test('verify()', () => {
     for (const [algo, hex] of pairs) {
-      expect(
+      assert.equal(
         verify(sign(algo, key, content), Buffer.from(hex, 'hex')),
-      ).toBeTruthy()
-      expect(
+        true,
+      )
+      assert.equal(
         verify(sign(algo, key, content), Buffer.from('foobar')),
-      ).toBeFalsy()
+        false,
+      )
     }
   })
 })

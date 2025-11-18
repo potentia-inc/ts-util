@@ -1,3 +1,5 @@
+import { strict as assert } from 'node:assert'
+import { describe, test } from 'node:test'
 import {
   HTTPError,
   ClientError,
@@ -51,48 +53,48 @@ import {
 
 describe('http error', () => {
   test('createHTTPError()', () => {
-    expect(fn(400)).toThrow(BadRequestError)
-    expect(fn(401)).toThrow(UnauthorizedError)
-    expect(fn(402)).toThrow(PaymentRequiredError)
-    expect(fn(403)).toThrow(ForbiddenError)
-    expect(fn(404)).toThrow(NotFoundError)
-    expect(fn(405)).toThrow(MethodNotAllowedError)
-    expect(fn(406)).toThrow(NotAcceptableError)
-    expect(fn(407)).toThrow(ProxyAuthenticationRequiredError)
-    expect(fn(408)).toThrow(RequestTimeoutError)
-    expect(fn(409)).toThrow(ConflictError)
-    expect(fn(410)).toThrow(GoneError)
-    expect(fn(411)).toThrow(LengthRequiredError)
-    expect(fn(412)).toThrow(PreconditionFailedError)
-    expect(fn(413)).toThrow(PayloadTooLargeError)
-    expect(fn(414)).toThrow(URITooLongError)
-    expect(fn(415)).toThrow(UnsupportedMediaTypeError)
-    expect(fn(416)).toThrow(RangeNotSatisfiableError)
-    expect(fn(417)).toThrow(ExpectationFailedError)
-    expect(fn(418)).toThrow(ImaTeapotError)
-    expect(fn(421)).toThrow(MisdirectedRequestError)
-    expect(fn(422)).toThrow(UnprocessableEntityError)
-    expect(fn(423)).toThrow(LockedError)
-    expect(fn(424)).toThrow(FailedDependencyError)
-    expect(fn(425)).toThrow(TooEarlyError)
-    expect(fn(426)).toThrow(UpgradeRequiredError)
-    expect(fn(428)).toThrow(PreconditionRequiredError)
-    expect(fn(429)).toThrow(TooManyRequestsError)
-    expect(fn(431)).toThrow(RequestHeaderFieldsTooLargeError)
-    expect(fn(451)).toThrow(UnavailableForLegalReasonsError)
-    expect(fn(500)).toThrow(InternalServerError)
-    expect(fn(501)).toThrow(NotImplementedError)
-    expect(fn(502)).toThrow(BadGatewayError)
-    expect(fn(503)).toThrow(ServiceUnavailableError)
-    expect(fn(504)).toThrow(GatewayTimeoutError)
-    expect(fn(505)).toThrow(HTTPVersionNotSupportedError)
-    expect(fn(506)).toThrow(VariantAlsoNegotiatesError)
-    expect(fn(507)).toThrow(InsufficientStorageError)
-    expect(fn(508)).toThrow(LoopDetectedError)
-    expect(fn(509)).toThrow(BandwidthLimitExceededError)
-    expect(fn(510)).toThrow(NotExtendedError)
-    expect(fn(511)).toThrow(NetworkAuthenticationRequiredError)
-    expect(fn(999)).toThrow(InternalServerError)
+    assert.throws(fn(400), BadRequestError)
+    assert.throws(fn(401), UnauthorizedError)
+    assert.throws(fn(402), PaymentRequiredError)
+    assert.throws(fn(403), ForbiddenError)
+    assert.throws(fn(404), NotFoundError)
+    assert.throws(fn(405), MethodNotAllowedError)
+    assert.throws(fn(406), NotAcceptableError)
+    assert.throws(fn(407), ProxyAuthenticationRequiredError)
+    assert.throws(fn(408), RequestTimeoutError)
+    assert.throws(fn(409), ConflictError)
+    assert.throws(fn(410), GoneError)
+    assert.throws(fn(411), LengthRequiredError)
+    assert.throws(fn(412), PreconditionFailedError)
+    assert.throws(fn(413), PayloadTooLargeError)
+    assert.throws(fn(414), URITooLongError)
+    assert.throws(fn(415), UnsupportedMediaTypeError)
+    assert.throws(fn(416), RangeNotSatisfiableError)
+    assert.throws(fn(417), ExpectationFailedError)
+    assert.throws(fn(418), ImaTeapotError)
+    assert.throws(fn(421), MisdirectedRequestError)
+    assert.throws(fn(422), UnprocessableEntityError)
+    assert.throws(fn(423), LockedError)
+    assert.throws(fn(424), FailedDependencyError)
+    assert.throws(fn(425), TooEarlyError)
+    assert.throws(fn(426), UpgradeRequiredError)
+    assert.throws(fn(428), PreconditionRequiredError)
+    assert.throws(fn(429), TooManyRequestsError)
+    assert.throws(fn(431), RequestHeaderFieldsTooLargeError)
+    assert.throws(fn(451), UnavailableForLegalReasonsError)
+    assert.throws(fn(500), InternalServerError)
+    assert.throws(fn(501), NotImplementedError)
+    assert.throws(fn(502), BadGatewayError)
+    assert.throws(fn(503), ServiceUnavailableError)
+    assert.throws(fn(504), GatewayTimeoutError)
+    assert.throws(fn(505), HTTPVersionNotSupportedError)
+    assert.throws(fn(506), VariantAlsoNegotiatesError)
+    assert.throws(fn(507), InsufficientStorageError)
+    assert.throws(fn(508), LoopDetectedError)
+    assert.throws(fn(509), BandwidthLimitExceededError)
+    assert.throws(fn(510), NotExtendedError)
+    assert.throws(fn(511), NetworkAuthenticationRequiredError)
+    assert.throws(fn(999), InternalServerError)
 
     function fn(status: number): () => never {
       return () => {
@@ -106,15 +108,15 @@ describe('http error', () => {
     const errno = 123
     const status = 456
     const err = new HTTPError(message, errno, status)
-    expect(err.name).toBe('HTTPError')
-    expect(err).toBeInstanceOf(HTTPError)
-    expect(err.message).toBe(message)
-    expect(err.status).toBe(status)
-    expect(err.errno).toBe(errno)
+    assert.equal(err.name, 'HTTPError')
+    assert(err instanceof HTTPError)
+    assert.equal(err.message, message)
+    assert.equal(err.status, status)
+    assert.equal(err.errno, errno)
 
-    expect(new HTTPError().message).toBe('HTTP Error')
-    expect(new HTTPError().errno).toBeUndefined()
-    expect(new HTTPError().status).toBe(500)
+    assert.equal(new HTTPError().message, 'HTTP Error')
+    assert.equal(new HTTPError().errno, undefined)
+    assert.equal(new HTTPError().status, 500)
   })
 
   test('HTTPError<string>()', () => {
@@ -122,11 +124,11 @@ describe('http error', () => {
     const errno = 'bar'
     const status = 456
     const err = new HTTPError(message, errno, status)
-    expect(err.name).toBe('HTTPError')
-    expect(err).toBeInstanceOf(HTTPError)
-    expect(err.message).toBe(message)
-    expect(err.status).toBe(status)
-    expect(err.errno).toBe(errno)
+    assert.equal(err.name, 'HTTPError')
+    assert(err instanceof HTTPError)
+    assert.equal(err.message, message)
+    assert.equal(err.status, status)
+    assert.equal(err.errno, errno)
   })
 
   test('ClientError()', () => {
@@ -134,18 +136,18 @@ describe('http error', () => {
     const errno = 123
     const status = 456
     const err = new ClientError(message, errno, status)
-    expect(err).toBeInstanceOf(HTTPError)
-    expect(err).toBeInstanceOf(ClientError)
-    expect(err.name).toBe('ClientError')
-    expect(err.message).toBe(message)
-    expect(err.status).toBe(status)
-    expect(err.errno).toBe(errno)
+    assert(err instanceof HTTPError)
+    assert(err instanceof ClientError)
+    assert.equal(err.name, 'ClientError')
+    assert.equal(err.message, message)
+    assert.equal(err.status, status)
+    assert.equal(err.errno, errno)
 
-    expect(new ClientError().message).toBe('Client Error')
-    expect(new ClientError().errno).toBeUndefined()
-    expect(new ClientError().status).toBe(400)
+    assert.equal(new ClientError().message, 'Client Error')
+    assert.equal(new ClientError().errno, undefined)
+    assert.equal(new ClientError().status, 400)
 
-    expect(() => new ClientError(message, errno, 500)).toThrow()
+    assert.throws(() => new ClientError(message, errno, 500))
   })
 
   test('ServerError()', () => {
@@ -153,18 +155,18 @@ describe('http error', () => {
     const errno = 123
     const status = 567
     const err = new ServerError(message, errno, status)
-    expect(err).toBeInstanceOf(HTTPError)
-    expect(err).toBeInstanceOf(ServerError)
-    expect(err.name).toBe('ServerError')
-    expect(err.message).toBe(message)
-    expect(err.status).toBe(status)
-    expect(err.errno).toBe(errno)
+    assert(err instanceof HTTPError)
+    assert(err instanceof ServerError)
+    assert.equal(err.name, 'ServerError')
+    assert.equal(err.message, message)
+    assert.equal(err.status, status)
+    assert.equal(err.errno, errno)
 
-    expect(new ServerError().message).toBe('Server Error')
-    expect(new ServerError().errno).toBeUndefined()
-    expect(new ServerError().status).toBe(500)
+    assert.equal(new ServerError().message, 'Server Error')
+    assert.equal(new ServerError().errno, undefined)
+    assert.equal(new ServerError().status, 500)
 
-    expect(() => new ServerError(message, errno, 400)).toThrow()
+    assert.throws(() => new ServerError(message, errno, 400))
   })
 })
 
@@ -172,39 +174,43 @@ describe('error utilities', () => {
   test('rethrow()', async () => {
     class SrcError extends Error {}
     class DstError extends Error {}
-    await expect(
+    await assert.rejects(
       reject(Error).catch(rethrow(SrcError, DstError)),
-    ).rejects.toThrow(Error)
-    await expect(
+      Error,
+    )
+    await assert.rejects(
       reject(SrcError).catch(rethrow(SrcError, DstError)),
-    ).rejects.toThrow(DstError)
+      DstError,
+    )
   })
 
   test('supress()', async () => {
     class OmitError extends Error {}
-    await expect(reject(Error).catch(supress(OmitError))).rejects.toThrow(Error)
-    await expect(
+    await assert.rejects(reject(Error).catch(supress(OmitError)), Error)
+    await assert.rejects(
       reject(Error).catch(supress(OmitError, 'foobar')),
-    ).rejects.toThrow(Error)
-    await expect(
-      reject(OmitError).catch(supress(OmitError)),
-    ).resolves.toBeUndefined()
-    await expect(
-      reject(OmitError).catch(supress<string>(OmitError)),
-    ).resolves.toBeUndefined()
-    await expect(
-      reject(OmitError).catch(supress(OmitError, 'foobar')),
-    ).resolves.toBe('foobar')
-    await expect(
-      resolve('foobar').catch(supress<string, OmitError>(OmitError)),
-    ).resolves.toBe('foobar')
+      Error,
+    )
+    assert.equal(await reject(OmitError).catch(supress(OmitError)), undefined)
+    assert.equal(
+      await reject(OmitError).catch(supress<string>(OmitError)),
+      undefined,
+    )
+    assert.equal(
+      await reject(OmitError).catch(supress(OmitError, 'foobar')),
+      'foobar',
+    )
+    assert.equal(
+      await resolve('foobar').catch(supress<string, OmitError>(OmitError)),
+      'foobar',
+    )
   })
 
   test('getMessage', () => {
-    expect(getMessage(new Error('foobar'))).toBe('foobar')
-    expect(getMessage({ message: 'foobar' })).toBe('foobar')
-    expect(getMessage('foobar')).toBe('foobar')
-    expect(getMessage({ foo: 'bar' })).toEqual(expect.any(String))
+    assert.equal(getMessage(new Error('foobar')), 'foobar')
+    assert.equal(getMessage({ message: 'foobar' }), 'foobar')
+    assert.equal(getMessage('foobar'), 'foobar')
+    assert.equal(typeof getMessage({ foo: 'bar' }), 'string')
   })
 
   function resolve(x: string): Promise<string> {
