@@ -1,77 +1,92 @@
 # @potentia/util
 
-A collection of utilities to make life easier
+A collection of cross-runtime utilities to make life easier.
 
- - [types](#types): utilities for `undefined`, `BigInt` and `Date`
- - [jest matchers](#jest-matchers): [jest](https://jestjs.io) matchers for
-  `undefined`, `BigInt` and `Date`
- - [request](#request):
-   [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) wrapper
-   with timeout support
- - [signature](#signature): utilities to sign the content and verify the
-   signature digests
- - [error](#error): predefiend HTTP error classes and utilities
- - [promise](#promise): `Promise` related utilities
- - [abort-controller](#abort-controller): `AbortController` related utilities
- - [misc](#misc): other utilities
+- [types](#types): utilities for `undefined`, `bigint`, `Date`, `number` and
+  `string`
+- [duration](#duration): the `Duration` type (`number` ms, or `'5s'`/`'100ms'`)
+  and `toMs()`
+- [bigint-json](#bigint-json): opt-in `JSON.stringify` support for `bigint`
+- [matchers](#matchers): [jest](https://jestjs.io), [bun:test](https://bun.sh/docs/cli/test)
+  and [vitest](https://vitest.dev) matchers for `Nil`, `bigint`, `Date` and
+  timestamps
+- [fetch](#fetch):
+  [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) wrapper
+  with timeout and URL-credential support
+- [signature](#signature): `sign`/`verify` over an algorithm-tagged key
+- [error](#error): predefined HTTP error classes and utilities
+- [promise](#promise): `Promise` related utilities
+- [abort-controller](#abort-controller): `AbortController` related utilities
+- [misc](#misc): other utilities
+
+## Runtime support
+
+Works on **Node.js (>= 22)**, **Bun** and **Deno (>= 2)**. The published package
+ships compiled JavaScript plus type declarations; every module depends only on
+web standards (`fetch`, `URL`, `AbortSignal`, `Uint8Array`) and `node:` built-ins
+(`node:crypto`, `node:timers/promises`), all of which Bun and Deno implement.
+
+The package has **no runtime dependencies**. The `./matcher/jest`,
+`./matcher/bun` and `./matcher/vitest` entry points require the corresponding
+test framework in your own project, but the rest of the package does not depend
+on any of them.
+
+```sh
+npm install @potentia/util   # or: bun add / deno add npm:@potentia/util
+```
 
 ## Types
 
-Aliases for `undefined` as `Nil` to shorten code and improve naming consistency
+`Nil` is an alias for `undefined`, used to keep the `...OrNil` naming short. The
+package represents absence as `undefined`; use `isNullish(x)` to test for either
+`null` or `undefined`.
 
 ```typescript
-import { Nil, TypeOrNil } from '@potentia/util'
+import { Nil, isNullish, type TypeOrNil } from '@potentia/util'
 // or import { Nil, ... } from '@potentia/util/type'
 
 assert(Nil === undefined) // Nil is the value alias of undefined
-function returnNil(): Nil { // Nil is also the type alias of undefined
-  return Nil // the same as return undefined
+function returnNil(): Nil {
+  // Nil is also the type alias of undefined
+  return Nil
 }
+isNullish(null) // true
+isNullish(undefined) // true
+isNullish(0) // false
 ```
 
-Type utilities
+Type utilities to flip object fields between required and optional —
+`PickRequired` makes the named fields required, `PickPartial` makes them
+optional, and `MixRequiredPartial` does both in one step:
 
 ```typescript
 import {
-  TypeOrNil,
-  PickRequired,
-  PickPartial,
-  MixRequiredPartial,
+  type TypeOrNil,
+  type PickRequired,
+  type PickPartial,
+  type MixRequiredPartial,
 } from '@potentia/util'
-// or import { TypeOrNil, ... } from '@potentia/util/type'
 
-// type utility to create T | undefined type from T
-type FooOrNil = TypeOfNil<Foo> // the same as Foo | Nil or Foo | undefined
+type FooOrNil = TypeOrNil<Foo> // Foo | undefined
 
-// pre-defined types:
+// pre-defined nil unions:
 const a: BigIntOrNil = 0n // bigint | undefined
 const b: DateOrNil = Nil // Date | undefined
 const c: NumberOrNil = 0 // number | undefined
-const d: StringOrNil = '' //  string | undefined
-const e: BufferOrNil = Nil // Buffer | undefined
+const d: StringOrNil = '' // string | undefined
+const e: Uint8ArrayOrNil = Nil // Uint8Array | undefined
 const f: NumStr = '123.456'
 const g: NumStrOrNil = Nil // NumStr | undefined
 
-// type utility to fine-tune the object field
-type A = {
-  a: string
-  b: number
-  c?: Date
-  d?: boolean
-  e?: Buffer
-}
-
-// A['c'] and A['d'] are required now
-const a1 = PickRequired<A, 'c' | 'd'> = { a: 'foo', b: 123, c: new Date(), d: false }
-
-// A['a'] is optional now
-const a2 = PickPartial<A, 'a'> = { b: 123 }
-
-// A['c'] and A['d'] are required and A['a'] is optional now
-const a3 = MixRequiredPartial<A, 'c' | 'd', 'a'> = { b: 123, c: new Date(), d: false }}
+type A = { a: string; b: number; c?: Date; d?: boolean }
+type A1 = PickRequired<A, 'c' | 'd'> // c and d become required
+type A2 = PickPartial<A, 'a'> // a becomes optional
+type A3 = MixRequiredPartial<A, 'c' | 'd', 'a'> // c, d required; a optional
 ```
 
-Utilities for `number`, `string`, `bigint`, `Date` conversion
+Coercions. The strict `toX()` functions **throw** a `TypeError` on `null`/
+`undefined` and on unparseable input. The lenient `toXOrNil()` variants return
+`Nil` for nullish input but still throw on genuinely invalid input.
 
 ```typescript
 import {
@@ -86,110 +101,168 @@ import {
 } from '@potentia/util'
 // or import { toBigInt, ... } from '@potentia/util/type'
 
-toNumber(0) // alias of Number(0)
-toNumber('0') // alias of Number('0')
+toNumber(0) // 0
+toNumber('123') // 123
+toNumber() // throws TypeError (nullish)
+toNumber('abc') // throws TypeError (invalid)
 toNumberOrNil() // undefined
+toNumberOrNil('abc') // throws TypeError
 
-toString(0) // alias of String(0)
-toString('0') // alias of String('0')
+toString(123) // '123'
+toString() // throws TypeError (nullish)
 toStringOrNil() // undefined
 
 toBigInt(0) // 0n
 toBigInt('0') // 0n
-toBigInt() // throw SyntaxError
-toBigInt(1.234) // throw RangeSyntax
+toBigInt() // throws TypeError (nullish)
+toBigInt('foobar') // throws SyntaxError
+toBigInt(1.234) // throws RangeError
 toBigIntOrNil() // undefined
 
-toDate() // equals to new Date()
-toDate(1234) // equals to new Date(1234)
-toDate('foobar') // equals to new Date('foobar'), get an invalid date
+toDate(1234) // new Date(1234)
+toDate('2020-01-01') // new Date('2020-01-01')
+toDate() // throws TypeError (no longer returns "now")
+toDate('garbage') // throws TypeError (invalid)
 toDateOrNil() // undefined
+toDateOrNil('garbage') // throws TypeError
 ```
 
-## Jest matchers
+## Duration
 
-[jest](https://jestjs.io) matchers for `BigInt`, `Date` and timestamp
+A length of time, accepted by `sleep()`, `fetch()` (`timeout`) and
+`TimeoutAbortController` (`timeout`). A `number` is **milliseconds** and may be
+fractional; a string carries an explicit unit suffix: `ms` (milliseconds) or `s`
+(seconds).
 
 ```typescript
-import * as matchers from '@potentia/util/jest'
+import { toMs, type Duration } from '@potentia/util'
+// or import { toMs } from '@potentia/util/duration'
+
+const a: Duration = 100 // 100 ms (a number is milliseconds)
+const b: Duration = '100ms' // 100 ms
+const c: Duration = '5s' // 5 s
+const d: Duration = '1.5s' // 1500 ms (fractions allowed)
+
+toMs(100) // 100
+toMs('5s') // 5000
+toMs('5') // throws RangeError (missing unit)
+```
+
+## bigint-json
+
+By default `JSON.stringify` throws on a `bigint`. Importing the opt-in
+`bigint-json` module installs `BigInt.prototype.toJSON` so bigints serialize as
+decimal strings. It is a side-effecting import and is intentionally **not** part
+of the main entry point.
+
+```typescript
+import '@potentia/util/bigint-json'
+
+JSON.stringify({ a: 123n }) // '{"a":"123"}'
+```
+
+## Matchers
+
+Custom matchers for `Nil`, `bigint`, `Date` and timestamps, available for jest,
+bun:test and vitest. The implementation is shared; only the import path differs.
+
+Each matcher checks the **type** when called with no argument, or the type
+**and value** when given one (the expected value is converted automatically).
+`toBe*` and `toEqual*` are the same matcher under two names — use `toBe*`
+throughout, or follow the jest convention (`toBe*` for the type, `toEqual*` for
+equality).
+
+```typescript
+// jest:   import * as matchers from '@potentia/util/matcher/jest'
+// bun:    import * as matchers from '@potentia/util/matcher/bun'
+// vitest: import * as matchers from '@potentia/util/matcher/vitest'
 expect.extend(matchers)
 
-/*
-name convention:
+expect(undefined).toBeNil()
+expect(null).not.toBeNil()
 
- toBe???(): check the type
- example:
-  expect(x).toBeBigInt()
-  check that x is of type BigInt
+expect(0n).toBeBigInt() // type
+expect(0n).toBeBigInt(0) // type and value
+expect(0n).toEqualBigInt('0') // same, jest-style
 
- toEqual???(): check the type and the value equality
- example:
-  expect(x).toEqualBigInt(y)
-  check that x is of type BigInt and equals to y,
-  where y is converted to BigInt automatically)
-*/
-
-expect(0n).toBeBigInt()
-expect(0).not.toBeBigInt()
-expect(0n).toEqualBigInt(0n)
-expect(0n).toEqualBigInt(0)
-expect(0n).toEqualBigInt('0')
-expect(0n).not.toEqualBigInt(1)
-expect(0).not.toEqualBigInt(0)
-
-expect(new Date()).not.toEqualDate(new Date())
 const a = new Date()
-expect(a).toEqualDate(a)
-expect(a).toEqualDate(a.getTime())
+expect(a).toBeDate() // type
+expect(a).toBeDate(a.getTime()) // type and value
 expect(a).toEqualDate(a.toISOString())
 
 expect(a.getTime()).toBeTimestamp()
-expect('foobar').not.toBeTimestamp()
 expect(a.getTime()).toEqualTimestamp(a)
-expect(a.getTime()).toEqualTimestamp(a.getTime())
-expect(a.getTime()).toEqualTimestamp(a.toISOString())
+expect(a.getTime()).toBeValidTimestamp()
+
+expect('2020-01-01').toBeDateString() // a date or date-time string
+expect('2020-01-01T12:30:00Z').toBeDateString()
 ```
 
-Note: use [jest-extended](https://www.npmjs.com/package/jest-extended)
-for `.toBeDate()` and `.toBeDateString()`
+## Fetch
 
-## Request
-
-[fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) wrapper
-with timeout support
+A drop-in [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+wrapper adding a `timeout` (a [Duration](#duration)) and URL-credential support.
+Importing it as `fetch` shadows the global; alias it if you want to keep the
+native one (e.g. `import { fetch as request } from '@potentia/util'`).
 
 ```typescript
-import { request } from '@potentia/util'
-// or import { request } from '@potentia/util/request'
+import { fetch } from '@potentia/util'
+// or import { fetch } from '@potentia/util/fetch'
 
 const link = 'https://...'
-const res = await request(link, { ... }) // identical to fetch(link, { ... })
-const res = await request(link, { timeout: 30000 }) // fetch() with 30 seconds timeout
-const res = await request('https://user:pass@host/path') // url with credentials is supported as well
+await fetch(link, { ... })                  // identical to the native fetch(link, { ... })
+await fetch(link, { timeout: 30000 })       // timeout as a number (30000 ms)
+await fetch(link, { timeout: '30s' })       // timeout as a Duration string
+await fetch('https://user:pass@host/path')  // URL credentials -> Basic auth header
 ```
+
+A caller `signal` is combined with the timeout rather than overwritten, and
+existing `headers` are preserved when the Authorization header is injected.
 
 ## Signature
 
-Utility to sign the content and verify the signature digests for the given
-algorithm and key
+`sign`/`verify` over an algorithm-tagged key — a discriminated union, so one
+pair handles every backend (HMAC, ed25519, RSA) by data. They are **async** and
+work on **raw bytes**: a `string` payload is its UTF-8 bytes, the `key` is always
+a `Uint8Array`, and the signature is returned as a raw `Uint8Array` — encode it
+(base64url, hex, …) at the boundary.
 
 ```typescript
-import { sign, verify } from '@potentia/util'
+import { sign, verify, type Credential } from '@potentia/util'
 // or import { sign, verify } from '@potentia/util/signature'
 
-/*
-sign content with specified algorithm/key and return the digest as a Buffer
- algorithm: md5
- key: 'key'
- content: 'The quick brown fox jumps over the lazy dog'
-*/
-const digest = sign('md5', 'key', 'The quick brown fox jumps over the lazy dog')
-verify(digest, Buffer.from('80070713463e7749b90c2dc24911e275', 'hex')) // true
+// HMAC (symmetric): `key` is the shared secret bytes
+const cred: Credential = {
+  algorithm: 'hmac',
+  hash: 'sha256',
+  key: new TextEncoder().encode('secret'),
+}
+const signature = await sign(cred, 'message') // Uint8Array
+const header = Buffer.from(signature).toString('base64url') // encode for the wire
+await verify(cred, 'message', Buffer.from(header, 'base64url')) // true
+
+// ed25519 / rsa (asymmetric): `key` is the DER-encoded key — PKCS#8 private when
+// signing, SPKI public when verifying. Convert PEM -> DER in your own layer.
+const sig = await sign({ algorithm: 'ed25519', key: privateKeyDer }, 'message')
+await verify({ algorithm: 'ed25519', key: publicKeyDer }, 'message', sig)
+await sign(
+  { algorithm: 'rsa', hash: 'sha256', padding: 'pss', key: privateKeyDer },
+  'message',
+)
 ```
+
+The `Credential` variants (`key` is always a `Uint8Array`):
+
+- `{ algorithm: 'hmac', hash?, key }` — `hash` is `'sha256'`/`'sha384'`/`'sha512'` (default `'sha512'`); `key` is the secret bytes
+- `{ algorithm: 'ed25519', key }` — `key` is PKCS#8 (private) / SPKI (public) DER
+- `{ algorithm: 'rsa', hash?, padding?, key }` — `padding` is `'pkcs1'` (default) or `'pss'`; `key` is PKCS#8 / SPKI DER
+
+An unsupported `algorithm` throws.
 
 ## Error
 
-Predefined HTTP 4xx/5xx error classes with a custom errno property support and utilities
+Predefined HTTP 4xx/5xx error classes with a custom `errno` property and
+utilities.
 
 ```typescript
 import assert from 'node:assert'
@@ -199,26 +272,20 @@ import {
   NotFoundError,
   createHTTPError,
   rethrow,
-  supress,
+  suppress,
   getMessage,
 } from '@potentia/util'
 // or import { ... } from '@potentia/util/error'
 
 /*
-all errors with standard HTTP 4xx and 5xx are predefined:
-
 Error
   HTTPError (base class for ClientError and ServerError)
     ClientError (base class for HTTP 4xx errors)
       BadRequestError (400)
-      UnauthorizedError (401)
-      PaymentRequiredError (402)
-      ForbiddenError (403)
       NotFoundError (404)
       ...
     ServerError (base class for HTTP 5xx errors)
       InternalServerError (500)
-      NotImplementedError (501)
       ...
 */
 
@@ -226,63 +293,57 @@ const e0 = new NotFoundError()
 assert(e0 instanceof NotFoundError)
 assert(e0 instanceof ClientError)
 assert(e0 instanceof HTTPError)
-assert(e0 instanceof Error)
 assert(e0.status === 404)
 assert(e0.message === 'Not Found')
-assert(e0.errno === undefined)
 
-// errno property default to number type
+// errno defaults to number; any type is supported and can be set explicitly
 const e1 = new NotFoundError('foobar', 123)
-assert(e1.status === 404)
-assert(e1.message === 'foobar')
-assert(e1.errno === 123)
+const e2 = new NotFoundError<boolean>('foobar', true)
 
-// other type is also supported
-const e2 = new NotFoundError('foobar', '123')
-assert(e2.errno === '123')
-
-// the errno type can be specified explicitly
-const e3 = new NotFoundError<boolean>('foobar', true)
-assert(e3.errno === true)
-
-// create an error from status
+// create an error from a status code
 createHTTPError(404, 'foobar', 3) // new NotFoundError('foobar', 3)
 
-// other utilities
+// rethrow: map one error type to another
 class A extends Error {}
 class B extends Error {}
 class C extends Error {}
+Promise.reject(new C()).catch(rethrow(A, B)) // rejects with C
+Promise.reject(new A()).catch(rethrow(A, B)) // rejects with B instead
 
-// rethrow error
-Promise.reject(new C()).catch(rethrow(A, B)) // rejects with C error
-Promise.reject(new A()).catch(rethrow(A, B)) // rejects with B error instead
-
-// supress error
-Promise.reject(new A()).catch(supress(B, 'foobar')) // rejects with A error
-Promise.reject(new B()).catch(supress(B, 'foobar')) // resolve with 'foobar'
-Promise.reject(new B()).catch(supress(B)) // resolve with undefined
-Promise.reject(new B()).catch(supress<string>(B)) // return type specified explicitly
-Promise.reject(new B()).catch(supress<string, B>(B)) // types specified explicitly
+// suppress: swallow a specific error type, optionally with a fallback value
+Promise.reject(new A()).catch(suppress(B, 'foobar')) // rejects with A
+Promise.reject(new B()).catch(suppress(B, 'foobar')) // resolves with 'foobar'
+Promise.reject(new B()).catch(suppress(B)) // resolves with undefined
 
 // get message
-getMessage(new Error('foo')) // get 'foo'
-getMessage({ message: 'bar' }) // get 'bar'
+getMessage(new Error('foo')) // 'foo'
+getMessage({ message: 'bar' }) // 'bar'
 ```
+
+The utilities:
+
+- `createHTTPError(status, message?, errno?)` — the matching error instance for
+  a status code (falls back to `InternalServerError` for an unknown status).
+- `rethrow(From, To)` — a `.catch` handler that re-throws `From` errors as `To`
+  and passes any other error through unchanged.
+- `suppress(Type, value?)` — a `.catch` handler that swallows `Type` errors
+  (resolving with `value`, default `undefined`) and re-throws the rest.
+- `getMessage(error)` — pull a string message out of any thrown value.
+
 ## Promise
+
+`PromiseTracker` wraps a promise and reports whether it has settled (resolved or
+rejected) through `isSettled`, without you having to await it; the original
+promise stays available as `.promise`.
 
 ```typescript
 import { PromiseTracker } from '@potentia/util'
 
-const promise = ...
 const tracker = new PromiseTracker(promise)
 
-/*
-you can check if the promise is settled before awaiting it.
-
-Note: You should wait for a tick to get the correct state due to
-the limitation of javascript
-*/
-await setImmediate() // wait a tick
+// check whether the promise has settled before awaiting it.
+// Note: wait a tick first, due to how promise callbacks are scheduled.
+await setImmediate()
 if (tracker.isSettled) {
   await tracker.promise
 }
@@ -290,46 +351,54 @@ if (tracker.isSettled) {
 
 ## Abort-Controller
 
+`TimeoutAbortController` is an `AbortController` that also aborts after a
+`timeout` (a [Duration](#duration)), optionally chained to an upstream `signal`.
+Pass its `.signal` to `fetch`, streams, or anything that accepts an
+`AbortSignal`. Its timeout uses an unref'd timer, so a pending controller never
+keeps the process alive.
+
 ```typescript
 import { TimeoutAbortController } from '@potentia/util'
 
 const p = new AbortController()
 const c = new TimeoutAbortController({
-  signal: a.signal, // optional
-  timeout: 5, // in second
+  signal: p.signal, // optional
+  timeout: '5s', // a Duration (5000 or '5s' or '5000ms')
 })
 
 /*
-aborter.signal is aborted if
+c.signal is aborted if
   1. signal is aborted (if provided), or
-  2. timeout (5 seconds later), or
-  3. aborter.abort() is called.
+  2. the timeout (5 s) elapses, or
+  3. c.abort() is called.
 */
-
-// case 1:
-p.aborted() // c.signal is also aborted
-
-// case 2:
-await ssleep(6) // c.signal is aborted due to timeout
-
-// case 3:
-c.aborted() // c.signal is aborted
 ```
 
 ## Misc
 
+The sleep helpers are promise-based delays: `sleep` takes a
+[Duration](#duration), while `msleep` and `ssleep` are explicit millisecond and
+second variants. All accept an optional `AbortSignal` and reject with
+`RangeError` on an out-of-range delay.
+
+`option(key, value)` returns `{ [key]: value }`, or `undefined` when `value` is
+nullish — handy for conditionally spreading a property into an object.
+
 ```typescript
-import { option, sleep, ssleep, msleep } from '@potentia/util'
+import { option, sleep, msleep, ssleep } from '@potentia/util'
 
-await ssleep(0.123) // sleep 0.123 second
-await msleep(123) // sleep 123 milliseconds
-await sleep(123) // the same as msleep(123) for backward compatibility
+await sleep(123) // 123 ms (a number is milliseconds)
+await sleep('123ms') // same, as a Duration string
+await sleep('5s') // 5 seconds
+await msleep(123) // 123 ms (explicit)
+await ssleep(0.123) // 0.123 seconds (explicit)
+await sleep(123, { signal }) // cancellable via an AbortSignal
+sleep(NaN) // rejects with RangeError (invalid delay)
 
-option('foo', bar) // => { 'foo': 'bar' }
-option('foo', 123.345) // => { 'foo': 123.456 }
+option('foo', 'bar') // => { foo: 'bar' }
 option('foo', null) // => undefined
 option('foo', undefined) // => undefined
-// used to assign the key/value in an object optionally
+// used to assign a key/value to an object conditionally:
 const a = { a: 123, b: 'foobar', c: true, d: null, e: undefined }
 const obj = {
   ...option('a', a.a),
@@ -337,5 +406,5 @@ const obj = {
   ...option('c', a.c),
   ...option('d', a.d),
   ...option('e', a.e),
-} // b is { a: 123, b: 'foobar', c: true }
+} // { a: 123, b: 'foobar', c: true }
 ```

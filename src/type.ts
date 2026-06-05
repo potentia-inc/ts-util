@@ -1,14 +1,3 @@
-declare global {
-  interface BigInt {
-    toJSON: () => string
-  }
-}
-
-BigInt.prototype.toJSON = function () {
-  return this.toString()
-}
-
-export const NIL = undefined // for backward compatibility
 export const Nil = undefined
 export type Nil = typeof undefined
 export type NumStr = `${number}`
@@ -27,13 +16,22 @@ export type BigIntOrNil = TypeOrNil<bigint>
 export type DateOrNil = TypeOrNil<Date>
 export type NumberOrNil = TypeOrNil<number>
 export type StringOrNil = TypeOrNil<string>
-export type BufferOrNil = TypeOrNil<Buffer>
+export type Uint8ArrayOrNil = TypeOrNil<Uint8Array>
 export type NumStrOrNil = TypeOrNil<NumStr>
+
+// Strict coercions: throw on nullish and on unparseable input.
+// The `...OrNil` variants return Nil for nullish but still throw on invalid.
 
 export function toBigInt(x?: unknown): bigint {
   if (typeof x === 'bigint') return x
-  if (typeof x === 'number' || typeof x === 'string') return BigInt(x)
-  return BigInt(String(x))
+  if (
+    typeof x === 'number' ||
+    typeof x === 'string' ||
+    typeof x === 'boolean'
+  ) {
+    return BigInt(x)
+  }
+  throw new TypeError(`cannot convert ${typeof x} to a bigint`)
 }
 
 export function toBigIntOrNil(x?: unknown): BigIntOrNil {
@@ -41,10 +39,17 @@ export function toBigIntOrNil(x?: unknown): BigIntOrNil {
 }
 
 export function toDate(x?: unknown): Date {
-  if (x instanceof Date) return x
-  if (isNullish(x)) return new Date()
-  if (typeof x === 'number' || typeof x === 'string') return new Date(x)
-  return new Date(String(x))
+  if (isNullish(x)) {
+    throw new TypeError('cannot convert null or undefined to a Date')
+  }
+  const date =
+    x instanceof Date
+      ? x
+      : new Date(typeof x === 'number' || typeof x === 'string' ? x : String(x))
+  if (isNaN(date.getTime())) {
+    throw new TypeError(`cannot convert to a valid Date: ${String(x)}`)
+  }
+  return date
 }
 
 export function toDateOrNil(x?: unknown): DateOrNil {
@@ -52,7 +57,13 @@ export function toDateOrNil(x?: unknown): DateOrNil {
 }
 
 export function toNumber(x?: unknown): number {
-  return typeof x === 'number' ? x : Number(x)
+  if (isNullish(x)) {
+    throw new TypeError('cannot convert null or undefined to a number')
+  }
+  if (typeof x === 'number') return x
+  const n = Number(x)
+  if (isNaN(n)) throw new TypeError(`cannot convert to a number: ${String(x)}`)
+  return n
 }
 
 export function toNumberOrNil(x?: unknown): NumberOrNil {
@@ -60,6 +71,9 @@ export function toNumberOrNil(x?: unknown): NumberOrNil {
 }
 
 export function toString(x?: unknown): string {
+  if (isNullish(x)) {
+    throw new TypeError('cannot convert null or undefined to a string')
+  }
   return typeof x === 'string' ? x : String(x)
 }
 

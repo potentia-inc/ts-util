@@ -1,10 +1,10 @@
 import { strict as assert } from 'node:assert'
 import { describe, test } from 'node:test'
 import { TimeoutAbortController } from '../src/abort-controller.js'
-import { ssleep } from '../src/misc.js'
+import { sleep } from '../src/misc.js'
 
 describe('AbortController', () => {
-  test('TimeoutAbortController: aborted already', async () => {
+  test('TimeoutAbortController: aborted already', () => {
     const aborter = new AbortController()
     assert.equal(aborter.signal.aborted, false)
     aborter.abort()
@@ -16,7 +16,7 @@ describe('AbortController', () => {
     assert.equal(timeouter.signal.aborted, true)
   })
 
-  test('TimeoutAbortController: signal aborted', async () => {
+  test('TimeoutAbortController: signal aborted', () => {
     const aborter = new AbortController()
     const timeouter = new TimeoutAbortController({
       signal: aborter.signal,
@@ -29,14 +29,18 @@ describe('AbortController', () => {
     assert.equal(timeouter.signal.aborted, true)
   })
 
-  test('TimeoutAbortController: timeout', async () => {
-    const timeouter = new TimeoutAbortController({ timeout: 1 })
+  test('TimeoutAbortController: timeout (milliseconds)', async () => {
+    const timeouter = new TimeoutAbortController({ timeout: 10 })
     assert.equal(timeouter.signal.aborted, false)
-    await ssleep(2)
+    await sleep(30)
     assert.equal(timeouter.signal.aborted, true)
+    assert.equal(
+      (timeouter.signal.reason as { name?: string })?.name,
+      'TimeoutError',
+    )
   })
 
-  test('TimeoutAbortController: abort() called', async () => {
+  test('TimeoutAbortController: abort() called', () => {
     const aborter = new AbortController()
     const timeouter = new TimeoutAbortController({
       signal: aborter.signal,

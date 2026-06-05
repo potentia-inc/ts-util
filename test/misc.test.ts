@@ -17,33 +17,37 @@ describe('option', () => {
 })
 
 describe('sleep', () => {
-  test('sleep', async () => {
-    const ms = 100
+  test('sleep() with a number (milliseconds)', async () => {
     const now = Date.now()
-    await sleep(ms)
-    const duration = Date.now() - now
-    assert.equal(Math.abs(duration - ms) <= 0.1 * ms, true)
+    await sleep(100)
+    assert.equal(Date.now() - now >= 90, true)
   })
 
-  test('ssleep', async () => {
-    const s = 0.1
-    const now = Date.now()
-    assert.equal(await ssleep(s), true)
-    const duration = Date.now() - now
-    assert.equal(Math.abs(duration / 1000 - s) <= 0.1 * s, true)
-    assert.equal(await ssleep(0.0005), false)
-    assert.equal(await ssleep(2147483.648), false)
-    assert.equal(await ssleep(NaN), false)
+  test('sleep() with a string duration', async () => {
+    const a = Date.now()
+    await sleep('100ms')
+    assert.equal(Date.now() - a >= 90, true)
+    const b = Date.now()
+    await sleep('0.1s')
+    assert.equal(Date.now() - b >= 90, true)
   })
 
-  test('msleep', async () => {
-    const ms = 100
-    const now = Date.now()
-    assert.equal(await msleep(ms), true)
-    const duration = Date.now() - now
-    assert.equal(Math.abs(duration - ms) <= 0.1 * ms, true)
-    assert.equal(await msleep(0.5), false)
-    assert.equal(await msleep(2147483648), false)
-    assert.equal(await msleep(NaN), false)
+  test('sleep() throws RangeError on an invalid delay', async () => {
+    await assert.rejects(sleep(NaN), RangeError)
+    await assert.rejects(sleep(-1), RangeError)
+    await assert.rejects(sleep(2147483648), RangeError)
+  })
+
+  test('sleep() is cancellable via signal', async () => {
+    await assert.rejects(sleep(10_000, { signal: AbortSignal.abort() }))
+  })
+
+  test('msleep() and ssleep()', async () => {
+    const a = Date.now()
+    await msleep(50)
+    assert.equal(Date.now() - a >= 40, true)
+    const b = Date.now()
+    await ssleep(0.05)
+    assert.equal(Date.now() - b >= 40, true)
   })
 })

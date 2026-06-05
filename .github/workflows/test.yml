@@ -1,0 +1,54 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm run dist
+      - run: npm run test:node
+      - run: npm run test:jest
+      - run: npm run test:vitest
+      - run: npm run smoke
+
+  bun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+      - run: npm ci
+      - run: npm run dist
+      # Bun cannot run the node:test suite (oven-sh/bun#5090), so verify the
+      # bun:test matchers plus the framework-free core smoke.
+      - run: npm run test:bun
+      - run: npm run smoke:bun
+
+  deno:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - run: npm run dist
+      # Deno runs the node:test suite, plus the framework-free core smoke.
+      - run: npm run test:deno
+      - run: npm run smoke:deno

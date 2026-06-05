@@ -1,10 +1,39 @@
 services:
-  test:
-    build: { context: . }
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
     restart: 'no'
     entrypoint: ['/bin/sh', '-c']
     command:
       - |
+        set -e
         npm run lint
-        npm run pretty
-        npm run test
+        npm run test:node
+        npm run test:jest
+        npm run test:vitest
+        npm run smoke
+
+  bun:
+    build:
+      context: .
+      dockerfile: Dockerfile.bun
+    restart: 'no'
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -e
+        bun test ./bun
+        bun smoke.mjs
+
+  deno:
+    build:
+      context: .
+      dockerfile: Dockerfile.deno
+    restart: 'no'
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -e
+        deno test --allow-read --allow-net dist/test/*.js
+        deno run -A smoke.mjs

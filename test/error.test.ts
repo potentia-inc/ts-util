@@ -48,7 +48,7 @@ import {
   createHTTPError,
   getMessage,
   rethrow,
-  supress,
+  suppress,
 } from '../src/error.js'
 
 describe('http error', () => {
@@ -184,24 +184,24 @@ describe('error utilities', () => {
     )
   })
 
-  test('supress()', async () => {
+  test('suppress()', async () => {
     class OmitError extends Error {}
-    await assert.rejects(reject(Error).catch(supress(OmitError)), Error)
+    await assert.rejects(reject(Error).catch(suppress(OmitError)), Error)
     await assert.rejects(
-      reject(Error).catch(supress(OmitError, 'foobar')),
+      reject(Error).catch(suppress(OmitError, 'foobar')),
       Error,
     )
-    assert.equal(await reject(OmitError).catch(supress(OmitError)), undefined)
+    assert.equal(await reject(OmitError).catch(suppress(OmitError)), undefined)
     assert.equal(
-      await reject(OmitError).catch(supress<string>(OmitError)),
+      await reject(OmitError).catch(suppress<string>(OmitError)),
       undefined,
     )
     assert.equal(
-      await reject(OmitError).catch(supress(OmitError, 'foobar')),
+      await reject(OmitError).catch(suppress(OmitError, 'foobar')),
       'foobar',
     )
     assert.equal(
-      await resolve('foobar').catch(supress<string, OmitError>(OmitError)),
+      await resolve('foobar').catch(suppress<string, OmitError>(OmitError)),
       'foobar',
     )
   })
