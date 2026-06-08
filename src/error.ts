@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { TypeOrNil } from './type.js'
+import type { TypeOrNil } from './type.js'
 
 export class HTTPError<T = number> extends Error {
   errno?: T
@@ -324,99 +324,65 @@ export class NetworkAuthenticationRequiredError<
   }
 }
 
+type HTTPErrorConstructor = new (message?: string, errno?: number) => HTTPError
+
+// Single source of truth for status -> class; createHTTPError looks up here
+// instead of duplicating the mapping in a switch.
+const ERROR_BY_STATUS = new Map<number, HTTPErrorConstructor>([
+  [400, BadRequestError],
+  [401, UnauthorizedError],
+  [402, PaymentRequiredError],
+  [403, ForbiddenError],
+  [404, NotFoundError],
+  [405, MethodNotAllowedError],
+  [406, NotAcceptableError],
+  [407, ProxyAuthenticationRequiredError],
+  [408, RequestTimeoutError],
+  [409, ConflictError],
+  [410, GoneError],
+  [411, LengthRequiredError],
+  [412, PreconditionFailedError],
+  [413, PayloadTooLargeError],
+  [414, URITooLongError],
+  [415, UnsupportedMediaTypeError],
+  [416, RangeNotSatisfiableError],
+  [417, ExpectationFailedError],
+  [418, ImaTeapotError],
+  [421, MisdirectedRequestError],
+  [422, UnprocessableEntityError],
+  [423, LockedError],
+  [424, FailedDependencyError],
+  [425, TooEarlyError],
+  [426, UpgradeRequiredError],
+  [428, PreconditionRequiredError],
+  [429, TooManyRequestsError],
+  [431, RequestHeaderFieldsTooLargeError],
+  [451, UnavailableForLegalReasonsError],
+  [500, InternalServerError],
+  [501, NotImplementedError],
+  [502, BadGatewayError],
+  [503, ServiceUnavailableError],
+  [504, GatewayTimeoutError],
+  [505, HTTPVersionNotSupportedError],
+  [506, VariantAlsoNegotiatesError],
+  [507, InsufficientStorageError],
+  [508, LoopDetectedError],
+  [509, BandwidthLimitExceededError],
+  [510, NotExtendedError],
+  [511, NetworkAuthenticationRequiredError],
+])
+
 export function createHTTPError<T = number>(
   status: number,
   message?: string,
   errno?: T,
 ): HTTPError<T> {
-  switch (status) {
-    case 400:
-      return new BadRequestError<T>(message, errno)
-    case 401:
-      return new UnauthorizedError<T>(message, errno)
-    case 402:
-      return new PaymentRequiredError<T>(message, errno)
-    case 403:
-      return new ForbiddenError<T>(message, errno)
-    case 404:
-      return new NotFoundError<T>(message, errno)
-    case 405:
-      return new MethodNotAllowedError<T>(message, errno)
-    case 406:
-      return new NotAcceptableError<T>(message, errno)
-    case 407:
-      return new ProxyAuthenticationRequiredError<T>(message, errno)
-    case 408:
-      return new RequestTimeoutError<T>(message, errno)
-    case 409:
-      return new ConflictError<T>(message, errno)
-    case 410:
-      return new GoneError<T>(message, errno)
-    case 411:
-      return new LengthRequiredError<T>(message, errno)
-    case 412:
-      return new PreconditionFailedError<T>(message, errno)
-    case 413:
-      return new PayloadTooLargeError<T>(message, errno)
-    case 414:
-      return new URITooLongError<T>(message, errno)
-    case 415:
-      return new UnsupportedMediaTypeError<T>(message, errno)
-    case 416:
-      return new RangeNotSatisfiableError<T>(message, errno)
-    case 417:
-      return new ExpectationFailedError<T>(message, errno)
-    case 418:
-      return new ImaTeapotError<T>(message, errno)
-    case 421:
-      return new MisdirectedRequestError<T>(message, errno)
-    case 422:
-      return new UnprocessableEntityError<T>(message, errno)
-    case 423:
-      return new LockedError<T>(message, errno)
-    case 424:
-      return new FailedDependencyError<T>(message, errno)
-    case 425:
-      return new TooEarlyError<T>(message, errno)
-    case 426:
-      return new UpgradeRequiredError<T>(message, errno)
-    case 428:
-      return new PreconditionRequiredError<T>(message, errno)
-    case 429:
-      return new TooManyRequestsError<T>(message, errno)
-    case 431:
-      return new RequestHeaderFieldsTooLargeError<T>(message, errno)
-    case 451:
-      return new UnavailableForLegalReasonsError<T>(message, errno)
-    case 500:
-      return new InternalServerError<T>(message, errno)
-    case 501:
-      return new NotImplementedError<T>(message, errno)
-    case 502:
-      return new BadGatewayError<T>(message, errno)
-    case 503:
-      return new ServiceUnavailableError<T>(message, errno)
-    case 504:
-      return new GatewayTimeoutError<T>(message, errno)
-    case 505:
-      return new HTTPVersionNotSupportedError<T>(message, errno)
-    case 506:
-      return new VariantAlsoNegotiatesError<T>(message, errno)
-    case 507:
-      return new InsufficientStorageError<T>(message, errno)
-    case 508:
-      return new LoopDetectedError<T>(message, errno)
-    case 509:
-      return new BandwidthLimitExceededError<T>(message, errno)
-    case 510:
-      return new NotExtendedError<T>(message, errno)
-    case 511:
-      return new NetworkAuthenticationRequiredError<T>(message, errno)
-  }
-  return new InternalServerError<T>(
-    message ?? `Unknown status ${status}`,
-    errno,
-  )
+  const Err = ERROR_BY_STATUS.get(status)
+  return (
+    Err
+      ? new Err(message, errno as number)
+      : new InternalServerError(message ?? `Unknown status ${status}`, errno)
+  ) as HTTPError<T>
 }
 
 export function rethrow<S extends Error, D extends Error>(
@@ -428,7 +394,7 @@ export function rethrow<S extends Error, D extends Error>(
   }
 }
 
-export function supress<V, E extends Error = Error>(
+export function suppress<V, E extends Error = Error>(
   Err: new (message?: string) => E,
   value?: V,
 ): (err: unknown) => TypeOrNil<V> {

@@ -1,23 +1,23 @@
 import { strict as assert } from 'node:assert'
 import { describe, test } from 'node:test'
-import { RequestListener, createServer } from 'node:http'
-import { request } from '../src/index.js'
+import { createServer, type RequestListener } from 'node:http'
+import { fetch } from '../src/index.js'
 
-describe('request', () => {
-  test('request()', async () => {
+describe('fetch', () => {
+  test('fetch()', async () => {
     const { link, stop } = await start()
-    const res = await request(link)
+    const res = await fetch(link)
     assert.equal(res.status, 200)
     await stop()
   })
 
-  test('request() with timeout error', async () => {
+  test('fetch() with timeout error', async () => {
     const { link, stop } = await start({ timeout: 10000 })
-    await assert.rejects(request(link, { timeout: 1 }), /timeout/)
+    await assert.rejects(fetch(link, { timeout: 1 }), /timeout/)
     await stop()
   })
 
-  test('request() with credential', async () => {
+  test('fetch() with credential', async () => {
     const username = 'foo'
     const password = 'bar'
     const exec: RequestListener = (req, res) => {
@@ -43,19 +43,47 @@ describe('request', () => {
     const { link, stop } = await start({ exec })
 
     // no credential
-    assert.equal((await request(link)).status, 401)
+    assert.equal((await fetch(link)).status, 401)
 
     // wrong credential
     const url = new URL(link)
     url.username = 'ooo'
     url.password = 'xxx'
-    assert.equal((await request(url.toString())).status, 401)
+    assert.equal((await fetch(url.toString())).status, 401)
 
     // correct credential
     url.username = username
     url.password = password
-    assert.equal((await request(url.toString())).status, 200)
+    assert.equal((await fetch(url.toString())).status, 200)
 
+    await stop()
+  })
+
+  test('fetch() merges a caller signal with the timeout', async () => {
+    const { link, stop } = await start({ timeout: 10000 })
+    // both a caller signal (already aborted) and a timeout are provided
+    await assert.rejects(
+      fetch(link, { timeout: 10000, signal: AbortSignal.abort() }),
+    )
+    await stop()
+  })
+
+  test('fetch() preserves caller headers and password-only credentials', async () => {
+    let header: string | undefined
+    let authorization: string | undefined
+    const exec: RequestListener = (req) => {
+      header = req.headers['x-test'] as string | undefined
+      authorization = req.headers['authorization'] as string | undefined
+    }
+    const { link, stop } = await start({ exec })
+    const url = new URL(link)
+    url.password = 'secret' // password, no username
+    await fetch(url.toString(), { headers: { 'x-test': 'kept' } })
+    assert.equal(header, 'kept') // caller header preserved
+    assert.equal(
+      authorization,
+      `Basic ${Buffer.from(':secret').toString('base64')}`,
+    )
     await stop()
   })
 })

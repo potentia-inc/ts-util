@@ -12,8 +12,16 @@ export class PromiseTracker<T> {
 
   constructor(promise: Promise<T>) {
     this.#promise = promise
-    promise.finally(() => {
-      this.#settled = true
-    })
+    // Use then() with both handlers (not finally()): finally() returns a
+    // derived promise that re-raises the rejection, producing a spurious
+    // unhandledRejection on a branch the caller cannot observe.
+    void promise.then(
+      () => {
+        this.#settled = true
+      },
+      () => {
+        this.#settled = true
+      },
+    )
   }
 }

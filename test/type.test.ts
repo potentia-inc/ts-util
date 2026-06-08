@@ -1,6 +1,5 @@
 import { strict as assert } from 'node:assert'
 import { describe, test } from 'node:test'
-import { sleep } from '../src/misc.js'
 import {
   Nil,
   toBigInt,
@@ -11,10 +10,10 @@ import {
   toNumberOrNil,
   toString,
   toStringOrNil,
-  PickRequired,
-  PickPartial,
-  MixRequiredPartial,
-  TypeOrNil,
+  type PickRequired,
+  type PickPartial,
+  type MixRequiredPartial,
+  type TypeOrNil,
 } from '../src/type.js'
 
 describe('Nil', () => {
@@ -66,17 +65,17 @@ describe('type utility', () => {
 })
 
 describe('bigint', () => {
-  test('toBigInt()', async () => {
-    const x = toBigInt(12345)
-    assert.equal(typeof x, 'bigint')
-    assert.equal(x, x)
-    assert.equal(x, 12345n)
-    assert.notEqual(x, 23456)
-    assert.notEqual(x, '23456')
+  test('toBigInt()', () => {
+    assert.equal(typeof toBigInt(12345), 'bigint')
+    assert.equal(toBigInt(12345), 12345n)
+    assert.equal(toBigInt('12345'), 12345n)
+    assert.equal(toBigInt(true), 1n)
   })
 
-  test('toBigInt() with error thrown', () => {
-    assert.throws(() => toBigInt(), SyntaxError)
+  test('toBigInt() throws on nullish and invalid', () => {
+    assert.throws(() => toBigInt(), TypeError) // nullish
+    assert.throws(() => toBigInt(null), TypeError)
+    assert.throws(() => toBigInt({}), TypeError)
     assert.throws(() => toBigInt('foobar'), SyntaxError)
     assert.throws(() => toBigInt(1.234), RangeError)
   })
@@ -85,60 +84,74 @@ describe('bigint', () => {
     assert.equal(toBigIntOrNil(null), Nil)
     assert.equal(toBigIntOrNil(Nil), Nil)
     assert.equal(typeof toBigIntOrNil(0n), 'bigint')
-  })
-
-  test('JSON.stringify() for bigint', () => {
-    assert.equal(JSON.stringify({ a: 123n }), '{"a":"123"}')
+    assert.throws(() => toBigIntOrNil('foobar'), SyntaxError) // invalid still throws
   })
 })
 
 describe('date', () => {
-  test('toDate()', async () => {
-    const x = toDate()
-    await wait()
-    assert.equal(x instanceof Date, true)
-    assert.notEqual(x.getTime(), toDate().getTime())
+  test('toDate()', () => {
+    const now = new Date()
+    assert.equal(toDate(now), now)
+    assert.equal(toDate(now.getTime()).getTime(), now.getTime())
+    assert.equal(toDate(now.toISOString()).getTime(), now.getTime())
+    assert.equal(
+      toDate({ toString: () => now.toISOString() }).getTime(),
+      now.getTime(),
+    )
   })
 
-  test('toDateOrNil()', async () => {
+  test('toDate() throws on nullish and invalid', () => {
+    assert.throws(() => toDate(), TypeError) // no longer returns "now"
+    assert.throws(() => toDate(null), TypeError)
+    assert.throws(() => toDate('garbage'), TypeError)
+  })
+
+  test('toDateOrNil()', () => {
     assert.equal(toDateOrNil(null), Nil)
     assert.equal(toDateOrNil(Nil), Nil)
-    const x = toDate()
-    await wait()
-    assert.notEqual(toDateOrNil(x)?.getTime(), new Date()?.getTime())
+    const now = new Date()
+    assert.equal(toDateOrNil(now), now)
+    assert.throws(() => toDateOrNil('garbage'), TypeError)
   })
 })
 
 describe('number', () => {
-  test('toNumber()', async () => {
+  test('toNumber()', () => {
     assert.equal(toNumber(123), 123)
     assert.equal(toNumber('123'), 123)
-    assert.notEqual(toNumber(123), 456)
+    assert.equal(toNumber(true), 1)
   })
 
-  test('toNumberOrNil()', async () => {
+  test('toNumber() throws on nullish and invalid', () => {
+    assert.throws(() => toNumber(), TypeError)
+    assert.throws(() => toNumber(null), TypeError)
+    assert.throws(() => toNumber('abc'), TypeError)
+  })
+
+  test('toNumberOrNil()', () => {
     assert.equal(toNumberOrNil(Nil), Nil)
     assert.equal(toNumberOrNil(null), Nil)
     assert.equal(toNumberOrNil(123), 123)
     assert.equal(toNumberOrNil('123'), 123)
-    assert.notEqual(toNumberOrNil(123), 456)
+    assert.throws(() => toNumberOrNil('abc'), TypeError)
   })
 })
 
 describe('string', () => {
-  test('toString()', async () => {
+  test('toString()', () => {
+    assert.equal(toString('abc'), 'abc')
     assert.equal(toString(123), '123')
-    assert.notEqual(toString(123), '456')
+    assert.equal(toString(true), 'true')
   })
 
-  test('toStringOrNil()', async () => {
+  test('toString() throws on nullish', () => {
+    assert.throws(() => toString(), TypeError)
+    assert.throws(() => toString(null), TypeError)
+  })
+
+  test('toStringOrNil()', () => {
     assert.equal(toStringOrNil(Nil), Nil)
     assert.equal(toStringOrNil(null), Nil)
     assert.equal(toStringOrNil(123), '123')
-    assert.notEqual(toStringOrNil(123), '456')
   })
 })
-
-async function wait(): Promise<void> {
-  await sleep(10)
-}
