@@ -1,5 +1,34 @@
 # Change log
 
+## [4.0.0] - 2026-06-08
+
+Cross-runtime release (Node.js >= 22, Bun, Deno >= 2); no runtime dependencies.
+
+- Support Bun and Deno; add `bun:test` and `vitest` matchers alongside jest,
+  under `/matcher/{jest,bun,vitest}`. Each matcher checks the type with no
+  argument or equality with one, exposed under both `toBe*`/`toEqual*` names;
+  adds `toBeDate` and `toBeDateString`
+- Add a `Duration` type and `toMs()`; `sleep()`, `fetch()` and
+  `TimeoutAbortController` take a `Duration` (a number is ms, or `'5s'`/`'100ms'`;
+  `TimeoutAbortController` was previously seconds)
+- Rename `request()` to `fetch()` (a superset of the native `fetch`); the
+  subpath is now `@potentia/util/fetch`
+- Rework `sign`/`verify`: now async, dispatch on a `Credential` — a
+  discriminated union (`{ algorithm: 'hmac', hash?, key }`,
+  `{ algorithm: 'ed25519', key }`, `{ algorithm: 'rsa', hash?, padding?, key }`).
+  `key` is always raw bytes (`Uint8Array`): the HMAC secret, or DER-encoded
+  asymmetric keys (PKCS#8 private / SPKI public) — PEM is the caller's concern.
+  Returns the raw signature as a `Uint8Array`. HMAC, ed25519 and RSA supported
+- Rename `supress` to `suppress`
+- Strict `toX()` coercions throw on nullish/invalid (`toDate()` no longer returns
+  "now"); `toXOrNil()` returns `Nil` for nullish but still throws on invalid
+- `BigInt` JSON serialization is now opt-in via `@potentia/util/bigint-json`
+- Remove `NIL` (use `Nil`), `BufferOrNil` (use `Uint8ArrayOrNil`), and `msleep`'s
+  boolean return; `sleep` validates its delay and accepts an `AbortSignal`
+- Fix `PromiseTracker` unhandled rejection; `request()` signal/`Headers`/
+  credential handling; `TimeoutAbortController` timer leak
+- Fix the `exports` map; enable `isolatedModules`/`verbatimModuleSyntax`
+
 ## [3.5.0] - 2025-11-17
 
 - Support node@^24.0.0

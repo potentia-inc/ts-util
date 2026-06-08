@@ -9,9 +9,13 @@ export class PromiseTracker {
     }
     constructor(promise) {
         this.#promise = promise;
-        promise.finally(() => {
+        // Use then() with both handlers (not finally()): finally() returns a
+        // derived promise that re-raises the rejection, producing a spurious
+        // unhandledRejection on a branch the caller cannot observe.
+        void promise.then(() => {
+            this.#settled = true;
+        }, () => {
             this.#settled = true;
         });
     }
 }
-//# sourceMappingURL=promise.js.map

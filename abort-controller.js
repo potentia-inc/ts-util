@@ -1,23 +1,23 @@
+import { toMs } from './duration.js';
+// An AbortController that also aborts after `timeout` (a Duration; a number is
+// milliseconds), optionally chained to an upstream `signal`. Built on the
+// platform's AbortSignal.timeout (whose timer is unref'd, so it never keeps the
+// event loop alive) and AbortSignal.any, rather than a hand-rolled setTimeout
+// that would leak a live timer until it fired.
 export class TimeoutAbortController extends AbortController {
     constructor(options) {
         super();
-        const { signal } = options;
-        if (signal?.aborted) {
-            this.abort(signal.reason); // already aborted
+        const signals = [AbortSignal.timeout(toMs(options.timeout))];
+        if (options.signal)
+            signals.push(options.signal);
+        const source = AbortSignal.any(signals);
+        if (source.aborted) {
+            this.abort(source.reason);
         }
         else {
-            const onAbort = () => this.abort(signal?.reason);
-            signal?.addEventListener('abort', onAbort);
-            const timeout = setTimeout(() => {
-                this.abort(new Error('TimeoutAbortController: timeout'));
-            }, options.timeout * 1000);
-            const cleanup = () => {
-                signal?.removeEventListener('abort', onAbort);
-                clearTimeout(timeout);
-                this.signal.removeEventListener('abort', cleanup);
-            };
-            this.signal.addEventListener('abort', cleanup);
+            source.addEventListener('abort', () => this.abort(source.reason), {
+                once: true,
+            });
         }
     }
 }
-//# sourceMappingURL=abort-controller.js.map
