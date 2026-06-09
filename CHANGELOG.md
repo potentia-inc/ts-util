@@ -1,5 +1,17 @@
 # Change log
 
+## [4.1.0] - 2026-06-09
+
+- Add `@potentia/util/logger`: a leveled logger (`trace`..`fatal`) with a
+  built-in console sink (`prettyFormat` on a TTY, JSON otherwise; `warn`+ to
+  stderr), child-logger bindings, and a pluggable `Sink` contract. Records are
+  `{ level, time: Date, name, message, fields? }`
+- Add `@potentia/util/dispatcher`: a transport-agnostic, fire-and-forget
+  outbound queue with batching, debounce, rate-limiting, retry/backoff, a
+  bounded (drop-oldest) queue, and graceful flush/close
+- Document Google Chat and Slack alert sinks as copy-paste recipes (verified as
+  test fixtures) rather than shipped code
+
 ## [4.0.0] - 2026-06-08
 
 Cross-runtime release (Node.js >= 22, Bun, Deno >= 2); no runtime dependencies.
