@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "cross-runtime utilities for node.js, bun and deno",
   "type": "module",
   "main": "./index.js",
@@ -58,9 +58,17 @@
       "types": "./abort-controller.d.ts",
       "default": "./abort-controller.js"
     },
+    "./dispatcher": {
+      "types": "./dispatcher.d.ts",
+      "default": "./dispatcher.js"
+    },
     "./duration": {
       "types": "./duration.d.ts",
       "default": "./duration.js"
+    },
+    "./logger": {
+      "types": "./logger.d.ts",
+      "default": "./logger.js"
     },
     "./error": {
       "types": "./error.d.ts",

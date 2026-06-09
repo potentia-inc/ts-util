@@ -17,6 +17,8 @@ A collection of cross-runtime utilities to make life easier.
 - [error](#error): predefined HTTP error classes and utilities
 - [promise](#promise): `Promise` related utilities
 - [abort-controller](#abort-controller): `AbortController` related utilities
+- [logger](#logger): a leveled logger (`trace`..`fatal`) with pluggable sinks
+- [dispatcher](#dispatcher): a batched, retrying, fire-and-forget outbound queue
 - [misc](#misc): other utilities
 
 ## Runtime support
@@ -373,6 +375,154 @@ c.signal is aborted if
   3. c.abort() is called.
 */
 ```
+
+## Logger
+
+`createLogger` is a small leveled logger (`trace` < `debug` < `info` < `warn` <
+`error` < `fatal`). It writes to a built-in console sink — `prettyFormat` on a
+TTY, compact JSON when piped, with `warn` and above to stderr — and fans
+out to any extra **sinks** you pass.
+
+```typescript
+import { createLogger } from '@potentia/util/logger'
+
+const log = createLogger({ name: 'api', level: 'info' })
+
+log.info('listening', { port: 3000 })
+log.error('request failed', { route: '/orders', status: 500 })
+
+const child = log.child({ requestId: 'abc' }) // bindings merged into every record
+child.warn('slow query', { ms: 1240 })
+
+await log.flush() // drain pending sink deliveries
+await log.close() // flush, then close sinks (for shutdown)
+```
+
+Each call is `level(message, fields?)`. A record is
+`{ level, time: Date, name, message, fields? }` — sinks receive the raw record
+and format it themselves. Use `format: jsonFormat`/`prettyFormat` (both exported)
+to force a console format, or `console: false` to drop the console sink. A
+**sink** is a log destination:
+
+```typescript
+interface Sink {
+  level?: Level // minimum level (defaults to the logger's)
+  handle(record: LogRecord): void // called per record; must not throw
+  flush?(): Promise<void> // drain pending deliveries
+  close?(): Promise<void> // release resources, e.g. close a socket
+}
+```
+
+### Alert recipes (Google Chat, Slack)
+
+Alert sinks aren't shipped — they're a few lines you copy and adapt, so you own
+the format and keep zero dependencies. Each wires a [Dispatcher](#dispatcher)
+(batching, retries, graceful flush) to a webhook `POST` via [fetch](#fetch),
+throwing on a non-2xx response so the dispatcher retries:
+
+```typescript
+import { createDispatcher } from '@potentia/util/dispatcher'
+import { fetch } from '@potentia/util/fetch'
+import {
+  createLogger,
+  prettyFormat,
+  type Level,
+  type LogRecord,
+  type Sink,
+} from '@potentia/util/logger'
+
+// Google Chat incoming webhook
+function gchatSink(options: { url: string; level?: Level }): Sink {
+  const dispatcher = createDispatcher<LogRecord>(
+    async (records) => {
+      const text = records.map(prettyFormat).join('\n')
+      const res = await fetch(options.url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text }),
+        timeout: '30s',
+      })
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`)
+    },
+    { maxBatch: 20, maxWait: '2s', retries: 3 },
+  )
+  return {
+    level: options.level,
+    handle: (record) => dispatcher.push(record),
+    flush: () => dispatcher.flush(),
+    close: () => dispatcher.close(),
+  }
+}
+
+const log = createLogger({
+  name: 'api',
+  sinks: [gchatSink({ url: GCHAT_WEBHOOK_URL, level: 'error' })],
+})
+```
+
+A Slack incoming webhook is the same shape with a different body:
+
+```typescript
+function slackSink(options: { url: string; level?: Level }): Sink {
+  const dispatcher = createDispatcher<LogRecord>(
+    async (records) => {
+      const text = records.map((r) => `*${r.level}* ${r.message}`).join('\n')
+      const res = await fetch(options.url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text }),
+        timeout: '30s',
+      })
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`)
+    },
+    { maxBatch: 20, maxWait: '2s', retries: 3 },
+  )
+  return {
+    level: options.level,
+    handle: (record) => dispatcher.push(record),
+    flush: () => dispatcher.flush(),
+    close: () => dispatcher.close(),
+  }
+}
+```
+
+## Dispatcher
+
+`createDispatcher` is a transport-agnostic outbound queue for fire-and-forget
+work — webhooks, alerts, metrics. You push items; it hands them to your async
+`send(items)` callback in **batches**, with debounce, rate-limiting,
+retry/backoff, a bounded queue and graceful flush. It knows nothing about HTTP or
+logging: the transport — and any connection state — lives in `send`, so the same
+primitive drives connectionless and connection-oriented (e.g. WebSocket) sinks.
+
+```typescript
+import { createDispatcher } from '@potentia/util/dispatcher'
+
+const dispatcher = createDispatcher<string>(
+  async (lines) => {
+    await deliver(lines) // your transport; throw to trigger a retry
+  },
+  {
+    maxBatch: 20, // up to 20 items per send()
+    maxWait: '2s', // ...but never wait longer than 2 s to send a partial batch
+    minInterval: '200ms', // rate-limit: minimum spacing between sends
+    retries: 3, // retry a failed send up to 3 times
+    backoff: (attempt) => `${attempt}s`, // delay before each retry
+    maxQueue: 1000, // bound the buffer; drop oldest beyond this
+    onError: (err, items) => console.error('dropped', items.length, err),
+  },
+)
+
+dispatcher.push('hello') // fire-and-forget: never blocks, never throws
+await dispatcher.flush() // resolve once the queue has drained
+await dispatcher.close() // flush, then stop accepting new items
+```
+
+`send` always receives an array (length 1 when not batching), and a failed
+`send` is retried up to `retries` times — gate it with `shouldRetry(error)` to
+keep transport-specific policy in your callback. The bounded `maxQueue` (default
+1000, drop-oldest) is the backpressure valve that keeps a slow or unreachable
+destination from leaking memory under a storm.
 
 ## Misc
 
