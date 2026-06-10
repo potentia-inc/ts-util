@@ -1,6 +1,2 @@
-declare global {
-    interface BigInt {
-        toJSON: () => string;
-    }
-}
+import './patch/bigint/json.js';
 export {};

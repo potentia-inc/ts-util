@@ -1,5 +1,13 @@
 # Change log
 
+## [4.2.0] - 2026-06-10
+
+- Move the `bigint` JSON patch under a `@potentia/util/patch` tree
+  (`@potentia/util/patch/bigint/json`, with `.../patch/bigint` and `.../patch`
+  composing it), mirroring `@potentia/mongodb7` so further patches can be added
+  at the finest grain. The original `@potentia/util/bigint-json` import keeps
+  working
+
 ## [4.1.0] - 2026-06-09
 
 - Add `@potentia/util/logger`: a leveled logger (`trace`..`fatal`) with a
@@ -25,11 +33,11 @@ Cross-runtime release (Node.js >= 22, Bun, Deno >= 2); no runtime dependencies.
   `TimeoutAbortController` was previously seconds)
 - Rename `request()` to `fetch()` (a superset of the native `fetch`); the
   subpath is now `@potentia/util/fetch`
-- Rework `sign`/`verify`: now async, dispatch on a `Credential` — a
+- Rework `sign`/`verify`: now async, dispatch on a `Credential` -- a
   discriminated union (`{ algorithm: 'hmac', hash?, key }`,
   `{ algorithm: 'ed25519', key }`, `{ algorithm: 'rsa', hash?, padding?, key }`).
   `key` is always raw bytes (`Uint8Array`): the HMAC secret, or DER-encoded
-  asymmetric keys (PKCS#8 private / SPKI public) — PEM is the caller's concern.
+  asymmetric keys (PKCS#8 private / SPKI public) -- PEM is the caller's concern.
   Returns the raw signature as a `Uint8Array`. HMAC, ed25519 and RSA supported
 - Rename `supress` to `suppress`
 - Strict `toX()` coercions throw on nullish/invalid (`toDate()` no longer returns
