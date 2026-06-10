@@ -6,7 +6,8 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "sideEffects": [
-    "./bigint-json.js"
+    "./bigint-json.js",
+    "./patch/**/*.js"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -53,6 +54,18 @@
     "./bigint-json": {
       "types": "./bigint-json.d.ts",
       "default": "./bigint-json.js"
+    },
+    "./patch": {
+      "types": "./patch/index.d.ts",
+      "default": "./patch/index.js"
+    },
+    "./patch/bigint": {
+      "types": "./patch/bigint/index.d.ts",
+      "default": "./patch/bigint/index.js"
+    },
+    "./patch/bigint/json": {
+      "types": "./patch/bigint/json.d.ts",
+      "default": "./patch/bigint/json.js"
     },
     "./abort-controller": {
       "types": "./abort-controller.d.ts",

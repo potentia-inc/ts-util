@@ -6,7 +6,8 @@ A collection of cross-runtime utilities to make life easier.
   `string`
 - [duration](#duration): the `Duration` type (`number` ms, or `'5s'`/`'100ms'`)
   and `toMs()`
-- [bigint-json](#bigint-json): opt-in `JSON.stringify` support for `bigint`
+- [patches](#patches): opt-in prototype patches (currently `bigint` JSON
+  serialization)
 - [matchers](#matchers): [jest](https://jestjs.io), [bun:test](https://bun.sh/docs/cli/test)
   and [vitest](https://vitest.dev) matchers for `Nil`, `bigint`, `Date` and
   timestamps
@@ -150,15 +151,36 @@ toMs('5s') // 5000
 toMs('5') // throws RangeError (missing unit)
 ```
 
-## bigint-json
+## Patches
 
-By default `JSON.stringify` throws on a `bigint`. Importing the opt-in
-`bigint-json` module installs `BigInt.prototype.toJSON` so bigints serialize as
-decimal strings. It is a side-effecting import and is intentionally **not** part
-of the main entry point.
+Some global prototypes can be patched for nicer ergonomics, but since that
+mutates classes shared across your whole process, the patches are **opt-in** and
+never applied by importing the package itself.
+
+Each patch is an independent global mutation, so they are exposed at the finest
+grain — one type × one concern — and the broader entry points just compose them.
+Import exactly what you need, once, at startup:
 
 ```typescript
-import '@potentia/util/bigint-json'
+import '@potentia/util/patch' // everything
+import '@potentia/util/patch/bigint' // every bigint patch
+import '@potentia/util/patch/bigint/json' // just the one you want
+```
+
+The tree:
+
+| entry point                     | patches                                  |
+| ------------------------------- | ---------------------------------------- |
+| `@potentia/util/patch`          | everything below                         |
+| `…/patch/bigint`                | `bigint/json`                            |
+| `…/patch/bigint/json`           | `BigInt` toJSON → a decimal string       |
+
+What the `bigint/json` patch does — by default `JSON.stringify` throws on a
+`bigint`; the patch installs `BigInt.prototype.toJSON` so bigints serialize as
+decimal strings:
+
+```typescript
+import '@potentia/util/patch/bigint/json'
 
 JSON.stringify({ a: 123n }) // '{"a":"123"}'
 ```
