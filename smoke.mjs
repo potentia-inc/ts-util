@@ -104,9 +104,9 @@ assert.ok(new NotFoundError() instanceof Error)
 assert.equal(getMessage(new Error('x')), 'x')
 assert.equal(typeof fetchWrapper, 'function')
 
-// bigint-json is opt-in
+// the bigint json patch is opt-in
 assert.throws(() => JSON.stringify(1n), TypeError)
-await import('./dist/src/bigint-json.js')
+await import('./dist/src/patch/bigint/json.js')
 assert.equal(JSON.stringify(1n), '"1"')
 
 console.log(`SMOKE OK (${runtime})`)
