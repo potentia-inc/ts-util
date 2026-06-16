@@ -80,6 +80,31 @@ describe('bigint', () => {
     assert.throws(() => toBigInt(1.234), RangeError)
   })
 
+  test('toBigInt() parses hex, exponents and integral decimals', () => {
+    assert.equal(toBigInt('0x1f'), 31n) // hex still accepted
+    assert.equal(toBigInt('-5'), -5n)
+    assert.equal(toBigInt('1e3'), 1000n) // exponent
+    assert.equal(toBigInt('12.00'), 12n) // integral decimal
+    assert.equal(toBigInt('1.2300E2'), 123n)
+    assert.equal(toBigInt('9007199254740993'), 9007199254740993n) // lossless
+    assert.throws(() => toBigInt(''), SyntaxError) // no longer 0n
+    assert.throws(() => toBigInt('   '), SyntaxError)
+    assert.throws(() => toBigInt('1.5'), SyntaxError) // real fraction
+  })
+
+  test('toBigInt() converts numeric wrapper objects via toString()', () => {
+    // stand-in for a BigNumber / Decimal128: an object whose toString() is a
+    // numeric string
+    const decimal = (s: string) => ({ toString: () => s })
+    assert.equal(toBigInt(decimal('12345')), 12345n)
+    assert.equal(toBigInt(decimal('12345.00')), 12345n) // integral despite the fraction
+    assert.equal(toBigInt(decimal('1E3')), 1000n)
+    assert.equal(toBigInt(Object(5)), 5n) // boxed Number
+    assert.throws(() => toBigInt(decimal('12345.67')), TypeError) // lossy
+    assert.throws(() => toBigInt([]), TypeError) // arrays rejected (not 0n)
+    assert.throws(() => toBigInt([5]), TypeError) // arrays rejected (not 5n)
+  })
+
   test('toBigIntOrNil()', () => {
     assert.equal(toBigIntOrNil(null), Nil)
     assert.equal(toBigIntOrNil(Nil), Nil)
@@ -126,6 +151,19 @@ describe('number', () => {
     assert.throws(() => toNumber(), TypeError)
     assert.throws(() => toNumber(null), TypeError)
     assert.throws(() => toNumber('abc'), TypeError)
+  })
+
+  test('toNumber() converts wrapper objects and rejects the empty/array footguns', () => {
+    const decimal = (s: string) => ({ toString: () => s })
+    assert.equal(toNumber(decimal('12345.67')), 12345.67) // fractions are fine
+    assert.equal(toNumber(decimal('1E3')), 1000)
+    assert.equal(toNumber(Object(5)), 5) // boxed Number
+    assert.equal(toNumber(10n), 10) // bigint
+    assert.throws(() => toNumber(''), TypeError) // no longer 0
+    assert.throws(() => toNumber('   '), TypeError)
+    assert.throws(() => toNumber([]), TypeError) // no longer 0
+    assert.throws(() => toNumber([5]), TypeError) // no longer 5
+    assert.throws(() => toNumber({}), TypeError)
   })
 
   test('toNumberOrNil()', () => {
