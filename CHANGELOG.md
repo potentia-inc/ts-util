@@ -1,5 +1,19 @@
 # Change log
 
+## [4.3.0] - 2026-06-17
+
+- `toBigInt()` and `toNumber()` now accept numeric wrapper objects (e.g.
+  `BigNumber`, `Decimal128`, boxed `Number`) by converting them via their string
+  form
+- `toBigInt()` additionally parses integral decimal and exponent strings
+  (`'12.00'`, `'1E3'`, `'1.2300E2'`) losslessly, on top of the
+  integer/hex/octal/binary forms `BigInt` already accepts; a non-integer value
+  (e.g. `'1.5'`) still throws
+- Behavior change: `toBigInt()`/`toNumber()` now throw on empty/whitespace-only
+  strings and on arrays instead of silently returning `0n`/`0` (e.g.
+  `toBigInt('')`, `toNumber([])`) or coercing a single element (`toNumber([5])`).
+  The `...OrNil` variants are unchanged (nullish -> Nil, otherwise delegate)
+
 ## [4.2.0] - 2026-06-10
 
 - Move the `bigint` JSON patch under a `@potentia/util/patch` tree
