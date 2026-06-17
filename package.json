@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "cross-runtime utilities for node.js, bun and deno",
   "type": "module",
   "main": "./index.js",
