@@ -104,7 +104,7 @@ function combined(
         label,
       )
     }
-    let pass = false
+    let pass: boolean
     let shown: unknown = arg
     try {
       shown = convert(arg)
