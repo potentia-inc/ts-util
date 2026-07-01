@@ -24,7 +24,7 @@ A collection of cross-runtime utilities to make life easier.
 
 ## Runtime support
 
-Works on **Node.js (>= 22)**, **Bun** and **Deno (>= 2)**. The published package
+Works on **Node.js (>= 24)**, **Bun** and **Deno (>= 2)**. The published package
 ships compiled JavaScript plus type declarations; every module depends only on
 web standards (`fetch`, `URL`, `AbortSignal`, `Uint8Array`) and `node:` built-ins
 (`node:crypto`, `node:timers/promises`), all of which Bun and Deno implement.
