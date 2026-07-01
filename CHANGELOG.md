@@ -1,5 +1,14 @@
 # Change log
 
+## [4.3.1] - 2026-07-01
+
+- Require Node.js >= 24 (was >= 22), matching the build/test toolchain; all
+  consumers already run Node >= 24 or Bun. Restores the >= 24 floor that 3.x
+  had before 4.0.0 temporarily lowered it to 22
+- Build with TypeScript 6 (dev toolchain only): TS 6 no longer auto-includes
+  `@types/*`, so `compilerOptions.types` is now set explicitly. No API or
+  runtime changes
+
 ## [4.3.0] - 2026-06-17
 
 - `toBigInt()` and `toNumber()` now accept numeric wrapper objects (e.g.
