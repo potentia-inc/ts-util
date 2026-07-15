@@ -4,6 +4,7 @@ export * from './duration.js';
 export * from './error.js';
 export * from './logger.js';
 export * from './misc.js';
+export * from './process.js';
 export * from './promise.js';
 export * from './fetch.js';
 export * from './signature.js';

@@ -1,6 +1,6 @@
 {
   "name": "@potentia/util",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "description": "cross-runtime utilities for node.js, bun and deno",
   "type": "module",
   "main": "./index.js",
@@ -91,6 +91,10 @@
     "./misc": {
       "types": "./misc.d.ts",
       "default": "./misc.js"
+    },
+    "./process": {
+      "types": "./process.d.ts",
+      "default": "./process.js"
     },
     "./promise": {
       "types": "./promise.d.ts",
