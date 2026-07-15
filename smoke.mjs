@@ -25,6 +25,7 @@ import {
   NotFoundError,
   getMessage,
   fetch as fetchWrapper,
+  setProcessTitle,
 } from './dist/src/index.js'
 
 const runtime =
@@ -103,6 +104,13 @@ assert.equal(createHTTPError(404).status, 404)
 assert.ok(new NotFoundError() instanceof Error)
 assert.equal(getMessage(new Error('x')), 'x')
 assert.equal(typeof fetchWrapper, 'function')
+
+// setProcessTitle — the effect is runtime-specific (process.title on Node,
+// /proc/self/comm on Linux, a no-op elsewhere), so just assert it runs.
+const originalTitle = process.title
+assert.equal(typeof setProcessTitle, 'function')
+assert.doesNotThrow(() => setProcessTitle('potentia-smoke'))
+setProcessTitle(originalTitle)
 
 // the bigint json patch is opt-in
 assert.throws(() => JSON.stringify(1n), TypeError)
