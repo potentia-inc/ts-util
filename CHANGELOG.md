@@ -1,5 +1,14 @@
 # Change log
 
+## [4.4.0] - 2026-07-15
+
+- Add `@potentia/util/process` with `setProcessTitle()`. `process.title` only
+  takes effect on Node.js; on Bun and Deno the setter is a no-op. On Linux the
+  function additionally writes the title (byte-truncated to the kernel's 15-byte
+  limit) to `/proc/self/comm`, so the comm name shows up in `ps -o comm`, `top`
+  and `htop` on every runtime. The `/proc` write is best-effort -- a locked-down
+  or non-standard `/proc` leaves the title unchanged rather than throwing
+
 ## [4.3.1] - 2026-07-01
 
 - Require Node.js >= 24 (was >= 22), matching the build/test toolchain; all
