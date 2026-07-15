@@ -92,6 +92,10 @@
       "types": "./misc.d.ts",
       "default": "./misc.js"
     },
+    "./process": {
+      "types": "./process.d.ts",
+      "default": "./process.js"
+    },
     "./promise": {
       "types": "./promise.d.ts",
       "default": "./promise.js"
